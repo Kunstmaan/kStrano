@@ -1,7 +1,7 @@
+set :jenkins_base_uri, "http://jenkins.uranus.kunstmaan.be/jenkins" 
+set :jenkins_base_job_name, "Default"
+
 namespace :jenkins do
-  
-  set :jenkins_base_uri, "http://jenkins.uranus.kunstmaan.be/jenkins" 
-  set :jenkins_base_job_name, "Default"
   
   require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
   require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
@@ -13,12 +13,12 @@ namespace :jenkins do
     ## 1. locate the job in jenkins
     current_branch = Kumastrano::GitHelper.branch_name
     job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
-    puts "Locating job #{job_name}"
+    Capistrano::CLI.ui.say("    locating job #{job_name}")
     current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)
     
     ## 2. if no job was found, first create a job for this branch
     if current_job_url.nil?
-      puts "No job found, start creating one"
+      Capistrano::CLI.ui.say("    no job found, start creating one")
       default_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, jenkins_base_job_name)
       if !default_job_url.nil?
         current_refspec = Kumastrano::GitHelper.origin_refspec
@@ -45,16 +45,30 @@ namespace :jenkins do
     
     ## 3. run the build command
     if !current_job_url.nil?
-      puts "Start building job #{job_name}"
+      Capistrano::CLI.ui.say("    start building job #{job_name}")
       Kumastrano::JenkinsHelper.build_job(current_job_url)
+    else
+      Capistrano::CLI.ui.say("    no job found for #{job_name}, cannot build")
     end
   end
   
-  desc "List jobs"
-  task:list_jobs do
-    puts Kumastrano::JenkinsHelper.list_jobs(jenkins_base_uri)
+end
+
+before :deploy do
+  current_branch = Kumastrano::GitHelper.branch_name
+  job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
+  current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)  
+  
+  ## a list of all the builds: http://jenkins.uranus.kunstmaan.be/jenkins/job/OpenMercury.NEXT/api/xml
+  ## a list of all the branches for the current build with there current SHA sign: http://jenkins.uranus.kunstmaan.be/jenkins/job/OpenMercury.NEXT/54/api/json
+
+  agree = Capistrano::CLI.ui.agree("    no valid build found for this branch, do you want to build now? ") do |q|
+    q.default = 'n'
   end
 
-  ## puts Kumastrano::GitHelper.git_hash
-  
+  if agree
+    jenkins::build
+  end
+
+  exit
 end
