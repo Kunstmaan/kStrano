@@ -1,0 +1,5 @@
+This script will contain Kunstmaan specific capistrano commands
+
+How to install:
++ gem build kumastrano.gemspec 
++ gem install kumastrano-0.0.1.gem
