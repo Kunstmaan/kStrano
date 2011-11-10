@@ -59,6 +59,7 @@ before :deploy do
   job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
   current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)  
   
+  ## check if the last build is in the git tree of this commit, if not it means, someone else is also comitting to this branch and testing. Do git pull first
   ## a list of all the builds: http://jenkins.uranus.kunstmaan.be/jenkins/job/OpenMercury.NEXT/api/xml
   ## a list of all the branches for the current build with there current SHA sign: http://jenkins.uranus.kunstmaan.be/jenkins/job/OpenMercury.NEXT/54/api/json
 
