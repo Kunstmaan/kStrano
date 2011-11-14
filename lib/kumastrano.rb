@@ -5,20 +5,21 @@ namespace :jenkins do
   
   require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
   require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
+  require "#{File.dirname(__FILE__)}/helpers/capistrano_helper.rb"
   require 'rexml/document'
   
   desc "Try to build the current branch on Jenkins"
-  task:build do
+  tKumastrano::CapistranoHelper.ask:build do
     
     ## 1. locate the job in jenkins
     current_branch = Kumastrano::GitHelper.branch_name
     job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
-    say("locating job #{job_name}")
+    Kumastrano::CapistranoHelper.say("locating job #{job_name}")
     current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)
     
     ## 2. if no job was found, first create a job for this branch
     if current_job_url.nil?
-      say("no job found, start creating one")
+      Kumastrano::CapistranoHelper.say("no job found, start creating one")
       default_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, jenkins_base_job_name)
       if !default_job_url.nil?
         current_refspec = Kumastrano::GitHelper.origin_refspec
@@ -45,10 +46,10 @@ namespace :jenkins do
     
     ## 3. run the build command
     if !current_job_url.nil?
-      say("start building job #{job_name}")
+      Kumastrano::CapistranoHelper.say("start building job #{job_name}, this can take a while")
       Kumastrano::JenkinsHelper.build_job(current_job_url)
     else
-      say("no job found for #{job_name}, cannot build")
+      Kumastrano::CapistranoHelper.say("no job found for #{job_name}, cannot build")
     end
   end
   
@@ -66,8 +67,8 @@ before :deploy do
 
   if current_job_url.nil?
     ## No job exists for the current branch, we'll create a job and build it. This can take a while.
-    if ask("no job found for the current branch, do you want to create a job for this branch and build it?")
-      say("building #{job_name} can take a while, try to deploying in a couple of minutes")
+    if Kumastrano::CapistranoHelper.ask("no job found for the current branch, do you want to create a job for this branch and build it?")
+      Kumastrano::CapistranoHelper.say("building #{job_name} can take a while, try to deploying in a couple of minutes")
       jenkins::build
     end
     
@@ -90,7 +91,7 @@ before :deploy do
   end
   
   if !build_hash.nil?
-    say("latest build found with hash #{build_hash}, the hash of the current HEAD is #{current_hash}")
+    Kumastrano::CapistranoHelper.say("latest build found with hash #{build_hash}, the hash of the current HEAD is #{current_hash}")
     
     if build_hash == current_hash
       if "SUCCESS" == result
@@ -98,7 +99,7 @@ before :deploy do
         can_deploy = TRUE
       else
         ## The hash of the last build is the same as the current hash, but the build failed.
-        if ask("the last build of this commit failed, do you want to build again?")
+        if Kumastrano::CapistranoHelper.ask("the last build of this commit failed, do you want to build again?")
           jenkins::build
         end
       end
@@ -106,25 +107,26 @@ before :deploy do
       merge_base = Kumastrano::GitHelper.merge_base(build_hash, current_hash)
       if merge_base == build_hash
         ## The build commit is an ancestor of HEAD        
-        say("the latest build is of an older commit, this can be of one of the following reasons")
-        say("- you have commits which aren't pushed to the server")
-        say("- the server hasn't detected your latest commit")
-        if ask("do you want to try building again?")
+        Kumastrano::CapistranoHelper.say("the latest build is of an older commit, this can be of one of the following reasons")
+        Kumastrano::CapistranoHelper.say("- you have commits which aren't pushed to the server")
+        Kumastrano::CapistranoHelper.say("- the server hasn't detected your latest commit")
+        if Kumastrano::CapistranoHelper.ask("do you want to try building again?")
           jenkins::build
         end
       elsif merge_base == current_hash
         ## The current HEAD is an ancestor of the build hash
-        say("the latest build is of a newer commit, someone else is probably working on the same branch")
+        Kumastrano::CapistranoHelper.say("the latest build is of a newer commit, someone else is probably working on the same branch")
+        Kumastrano::CapistranoHelper.say("you can try by pulling the latest code first")
       else
         ## Something is wrong, we don't know what try building again
-        if ask("the latest build isn't a valid build, do you want to try building again?")
+        if Kumastrano::CapistranoHelper.ask("the latest build isn't a valid build, do you want to try building again?")
           jenkins::build
         end
       end
     end
   else
     ## No build found, try building it
-    if ask("no build found, do you want to try building it?")
+    if Kumastrano::CapistranoHelper.ask("no build found, do you want to try building it?")
       jenkins::build
     end
   end
@@ -132,16 +134,4 @@ before :deploy do
   if !can_deploy
     exit
   end
-end
-
-def say(text)
-  Capistrano::CLI.ui.say("  * #{text}")
-end
-
-def ask(question)
-  agree = Capistrano::CLI.ui.agree("    #{question} ") do |q|
-    q.default = 'n'
-  end
-  
-  agree
 end
