@@ -1,11 +1,11 @@
 module Kumastrano
   class CapistranoHelper
     
-    def say(text)
+    def self.say(text)
       Capistrano::CLI.ui.say("  * #{text}")
     end
 
-    def ask(question)
+    def self.ask(question)
       agree = Capistrano::CLI.ui.agree("    #{question} ") do |q|
         q.default = 'n'
       end

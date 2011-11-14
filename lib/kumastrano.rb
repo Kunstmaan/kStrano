@@ -9,7 +9,7 @@ namespace :jenkins do
   require 'rexml/document'
   
   desc "Try to build the current branch on Jenkins"
-  tKumastrano::CapistranoHelper.ask:build do
+  task:build do
     
     ## 1. locate the job in jenkins
     current_branch = Kumastrano::GitHelper.branch_name
