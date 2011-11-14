@@ -3,13 +3,22 @@ module Kumastrano
     
     require 'cgi'
     
-    def self.git_hash
-      hash = %x(git rev-parse HEAD)
+    def self.fetch
+      %x(git fetch)
+    end
+    
+    def self.merge_base(commit1, commit2 = "HEAD")
+      base = %x(git merge-base #{commit1} #{commit2})
+      base.strip
+    end
+    
+    def self.commit_hash(commit = "HEAD")
+      hash = %x(git rev-parse #{commit})
       hash.strip
     end
     
-    def self.branch_name
-      name = %x(git name-rev --name-only HEAD)
+    def self.branch_name(commit = "HEAD")
+      name = %x(git name-rev --name-only #{commit})
       name.strip
     end
     

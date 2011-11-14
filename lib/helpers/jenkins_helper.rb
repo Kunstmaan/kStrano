@@ -8,7 +8,7 @@ module Kumastrano
     
     def self.make_safe_job_name(app_name, branch_name)
       job_name = "#{app_name} (#{branch_name})"
-      job_name.gsub("/", "-") # \/#* is unsafe for jenkins job name, because not uri safe
+      job_name.gsub(/[#*\/\\]/, "-") # \/#* is unsafe for jenkins job name, because not uri safe
     end
       
     def self.job_url_for_branch(jenkins_base_uri, branch_name)
@@ -63,6 +63,11 @@ module Kumastrano
     def self.build_job(job_uri)
       res = get_plain("#{job_uri}/build")
       res.code.to_i == 302
+    end
+    
+    def self.build_info(job_uri, build="lastBuild")
+      res = get_plain("#{job_uri}/#{build}/api/json")
+      parsed_res = JSON.parse(res.body)
     end
     
     private
