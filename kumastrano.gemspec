@@ -15,4 +15,6 @@ Gem::Specification.new do |s|
   s.author      = "Kunstmaan"
   s.email       = 'hello@kunstmaan.be'
   s.homepage    = 'http://www.kunstmaan.be'
+  
+  s.add_dependency(%q<broach>, [">= 0.2.1"])
 end

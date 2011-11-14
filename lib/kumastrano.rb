@@ -1,12 +1,19 @@
 set :jenkins_base_uri, "http://jenkins.uranus.kunstmaan.be/jenkins" 
 set :jenkins_base_job_name, "Default"
 
+set :campfire_room, "OpenMercury.NEXT"
+set :campfire_token, "d81bc3243021b0292095216164738cae42b1a3cf"
+set :campfire_account, "daanporon"
+
+require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
+require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
+require "#{File.dirname(__FILE__)}/helpers/capistrano_helper.rb"
+require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"  
+require "#{File.dirname(__FILE__)}/helpers/campfire_helper.rb"  
+require 'rexml/document'
+require 'broach'
+
 namespace :jenkins do
-  
-  require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
-  require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
-  require "#{File.dirname(__FILE__)}/helpers/capistrano_helper.rb"
-  require 'rexml/document'
   
   desc "Try to build the current branch on Jenkins"
   task:build do
@@ -48,6 +55,20 @@ namespace :jenkins do
     if !current_job_url.nil?
       Kumastrano::CapistranoHelper.say("start building job #{job_name}, this can take a while")
       Kumastrano::JenkinsHelper.build_job(current_job_url)
+      ## Wait 5 seconds before polling
+      ## Problems with polling
+      ## - the build can be put in a queue
+      ## - building time can be different each time
+      ## - the lastBuild isn't updated directly
+      sleep 5
+      Kumastrano.poll("A timeout occured", 55) do
+        ## wait for the building to be finished
+        last_build_info = Kumastrano::JenkinsHelper.build_info(current_job_url)
+        result = last_build_info['result'] ## SUCCESS or FAILURE
+        building = last_build_info['building']
+        "false" == building.to_s && !result.nil?
+      end
+      Kumastrano::CapistranoHelper.say("done building")
     else
       Kumastrano::CapistranoHelper.say("no job found for #{job_name}, cannot build")
     end
@@ -59,7 +80,7 @@ before :deploy do
   ## Allways fetch the latest information from git
   Kumastrano::GitHelper.fetch
   
-  can_deploy = FALSE
+  can_deploy = false
   current_branch = Kumastrano::GitHelper.branch_name
   current_hash = Kumastrano::GitHelper.commit_hash
   job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
@@ -96,7 +117,7 @@ before :deploy do
     if build_hash == current_hash
       if "SUCCESS" == result
         ## The hash of the last build is the same as my hash we can deploy
-        can_deploy = TRUE
+        can_deploy = true
       else
         ## The hash of the last build is the same as the current hash, but the build failed.
         if Kumastrano::CapistranoHelper.ask("the last build of this commit failed, do you want to build again?")
@@ -132,6 +153,14 @@ before :deploy do
   end
 
   if !can_deploy
+    Broach.settings = {
+      'account' => campfire_account,
+      'token' => campfire_token,
+      'use_ssl' => true
+    }
+    puts campfire_room
+    puts Broach::Room.find_by_name(campfire_room)
+    
     exit
   end
 end
