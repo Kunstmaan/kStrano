@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.name        = 'kumastrano'
+  s.name        = 'kstrano'
   s.version     = '0.0.1'
   s.summary     = <<-DESC.strip.gsub(/\n\s+/, " ")
     Deploying Kunstmaan applications with Capistrano, Jenkins and GIT.
