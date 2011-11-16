@@ -11,6 +11,7 @@ require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/campfire_helper.rb"  
 require 'rexml/document'
 require 'broach'
+require 'etc'
 
 namespace :campfire do
   
@@ -22,13 +23,11 @@ namespace :campfire do
       'token' => campfire_token,
       'use_ssl' => true
     }
-    puts campfire_room
+    
     room = Broach::Room.find_by_name(campfire_room)
-    message = ARGV.join(' ')
+    message = ARGV.join(' ').gsub('campfire:say', '')
     
     room.speak(message)
-    
-    exit
   end
   
 end
@@ -178,8 +177,12 @@ before :deploy do
       'token' => campfire_token,
       'use_ssl' => true
     }
-    puts campfire_room
-    puts Broach::Room.find_by_name(campfire_room)
+    room = Broach::Room.find_by_name(campfire_room)
+    
+    if !room.nil?
+      message = "#{Etc.getlogin} tried deploying #{application} but it failed"
+      room.speak(message)
+    end
     
     exit
   end
