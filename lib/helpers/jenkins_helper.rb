@@ -9,22 +9,18 @@ module Kumastrano
     def self.build_and_wait(job_uri, timeout=60, interval=5)
       success = false
       prev_build = Kumastrano::JenkinsHelper.last_build_number(job_uri)
-      Kumastrano.say("Start building ##{(prev_build + 1)}")
       Kumastrano::JenkinsHelper.build_job(job_uri)
       Kumastrano.poll("A timeout occured", timeout, interval) do
         ## wait for the building to be finished
-        Kumastrano.say("Waiting")
         last_build_info = Kumastrano::JenkinsHelper.build_info(job_uri)
         result = last_build_info['result'] ## SUCCESS or FAILURE
         building = last_build_info['building']
         number = last_build_info['number']
         if number == (prev_build + 1) && "false" == building.to_s && !result.nil?
           if "SUCCESS" == result
-            Kumastrano.say("The build was a success")
             success = true
           else
             success = false
-            Kumastrano.say("Building failed")
           end
           true
         else
