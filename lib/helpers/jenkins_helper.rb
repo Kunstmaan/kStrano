@@ -6,6 +6,34 @@ module Kumastrano
     require 'uri'
     require 'json'
     
+    def self.build_and_wait(job_uri, timeout=60, interval=5)
+      success = false
+      prev_build = Kumastrano::JenkinsHelper.last_build_number(job_uri)
+      Kumastrano.say("Start building ##{(prev_build + 1)}")
+      Kumastrano::JenkinsHelper.build_job(job_uri)
+      Kumastrano.poll("A timeout occured", timeout, interval) do
+        ## wait for the building to be finished
+        Kumastrano.say("Waiting")
+        last_build_info = Kumastrano::JenkinsHelper.build_info(job_uri)
+        result = last_build_info['result'] ## SUCCESS or FAILURE
+        building = last_build_info['building']
+        number = last_build_info['number']
+        if number == (prev_build + 1) && "false" == building.to_s && !result.nil?
+          if "SUCCESS" == result
+            Kumastrano.say("The build was a success")
+            success = true
+          else
+            success = false
+            Kumastrano.say("Building failed")
+          end
+          true
+        else
+          false
+        end
+      end
+      success
+    end
+    
     def self.make_safe_job_name(app_name, branch_name)
       job_name = "#{app_name} (#{branch_name})"
       job_name.gsub(/[#*\/\\]/, "-") # \/#* is unsafe for jenkins job name, because not uri safe
@@ -63,6 +91,12 @@ module Kumastrano
     def self.build_job(job_uri)
       res = get_plain("#{job_uri}/build")
       res.code.to_i == 302
+    end
+    
+    def self.last_build_number(job_uri)
+      res = get_plain("#{job_uri}/api/json?tree=lastBuild[number]")
+      parsed_res = JSON.parse(res.body)
+      parsed_res['lastBuild']['number']
     end
     
     def self.build_info(job_uri, build="lastBuild")

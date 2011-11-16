@@ -73,20 +73,7 @@ namespace :jenkins do
     ## 3. run the build command
     if !current_job_url.nil?
       Kumastrano.say("start building job #{job_name}, this can take a while")
-      Kumastrano::JenkinsHelper.build_job(current_job_url)
-      ## Wait 5 seconds before polling
-      ## Problems with polling
-      ## - the build can be put in a queue
-      ## - building time can be different each time
-      ## - the lastBuild isn't updated directly
-      sleep 5
-      Kumastrano.poll("A timeout occured", 55) do
-        ## wait for the building to be finished
-        last_build_info = Kumastrano::JenkinsHelper.build_info(current_job_url)
-        result = last_build_info['result'] ## SUCCESS or FAILURE
-        building = last_build_info['building']
-        "false" == building.to_s && !result.nil?
-      end
+      Kumastrano::JenkinsHelper.build_and_wait current_job_url
       Kumastrano.say("done building")
     else
       Kumastrano.say("no job found for #{job_name}, cannot build")
