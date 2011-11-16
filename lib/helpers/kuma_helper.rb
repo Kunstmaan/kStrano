@@ -10,7 +10,19 @@ module Kumastrano
     msg ||= "polling failed after #{seconds} seconds" 
     raise msg
   end
+  
+  def say(text)
+    Capistrano::CLI.ui.say("  * #{text}")
+  end
 
-  module_function :poll
+  def ask(question)
+    agree = Capistrano::CLI.ui.agree("    #{question} ") do |q|
+      q.default = 'n'
+    end
+
+    agree
+  end
+
+  module_function :poll, :say, :ask
   
 end

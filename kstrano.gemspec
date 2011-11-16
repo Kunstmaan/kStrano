@@ -16,5 +16,7 @@ Gem::Specification.new do |s|
   s.email       = 'hello@kunstmaan.be'
   s.homepage    = 'http://www.kunstmaan.be'
   
+  s.add_dependency(%q<capistrano>, [">= 2.9.0"])
+  s.add_dependency(%q<json>, [">= 1.6.1"])
   s.add_dependency(%q<broach>, [">= 0.2.1"])
 end
