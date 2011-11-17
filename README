@@ -3,5 +3,5 @@ This script will contain Kunstmaan specific capistrano commands
 How to install:
 + gem build kstrano.gemspec 
 + gem install kstrano-0.0.1.gem
-+ Add this to your capfile 
-	load Gem.find_files('kstrano.rb').last.to_s
++ now to kumafy your project just do this in the project directory
+	kumafy .
