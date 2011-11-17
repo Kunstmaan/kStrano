@@ -6,8 +6,9 @@ module Kumastrano
     require 'uri'
     require 'json'
     
-    def self.build_and_wait(job_uri, timeout=60, interval=5)
+    def self.build_and_wait(job_uri, timeout=300, interval=2)
       success = false
+      last_build_info = nil
       prev_build = Kumastrano::JenkinsHelper.last_build_number(job_uri)
       Kumastrano::JenkinsHelper.build_job(job_uri)
       Kumastrano.poll("A timeout occured", timeout, interval) do
@@ -27,7 +28,22 @@ module Kumastrano
           false
         end
       end
-      success
+      return success, last_build_info
+    end
+    
+    def self.fetch_build_hash_from_build_info(build_info, branch_name)
+      actions = build_info['actions']
+
+      build_hash = nil
+      actions.each do |list|
+        last_revision = list['lastBuiltRevision']
+        if !last_revision.nil? && branch_name == last_revision['branch'][0]['name'].sub("origin/", "")
+          build_hash = last_revision['branch'][0]['SHA1']
+          break
+        end
+      end
+      
+      build_hash
     end
     
     def self.make_safe_job_name(app_name, branch_name)

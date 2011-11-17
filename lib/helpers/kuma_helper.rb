@@ -1,5 +1,5 @@
 module Kumastrano
-  
+    
   def poll(msg=nil, seconds=10.0, interval_seconds=1.0) 
     (seconds / interval_seconds).to_i.times do
       result = yield
