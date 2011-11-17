@@ -236,3 +236,16 @@ before :deploy do
     end
   end
 end
+
+after :deploy do
+  Broach.settings = {
+    'account' => campfire_account,
+    'token' => campfire_token,
+    'use_ssl' => true
+  }
+  room = Broach::Room.find_by_name campfire_room
+  
+  if !room.nil?
+    room.speak "#{Etc.getlogin.capitalize} successfuly deployed #{current_branch} for #{application}"
+  end
+end
