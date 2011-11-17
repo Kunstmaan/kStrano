@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'fileutils'
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename($0)} [path]"
+
+  opts.on("-h", "--help", "Displays this help info") do
+    puts opts
+    exit 0
+  end
+
+  begin
+    opts.parse!(ARGV)
+  rescue OptionParser::ParseError => e
+    warn e.message
+    puts opts
+    exit 1
+  end
+end
+
+if ARGV.empty?
+  abort "Please specify the directory to capifony, e.g. `#{File.basename($0)} .'"
+elsif !File.exists?(ARGV.first)
+  abort "`#{ARGV.first}' does not exist."
+elsif !File.directory?(ARGV.first)
+  abort "`#{ARGV.first}' is not a directory."
+elsif ARGV.length > 1
+  abort "Too many arguments; please specify only the directory to capify."
+end
+
+base = ARGV.shift
+file = File.join(base, "Capfile")
+
+if !File.exists?("Capfile")
+  abort "Make sure the project has been capified or capifonied."
+else
+  includestr = "load Gem.find_files('kstrano.rb').last.to_s"
+  fcontent = ""
+  File.open(file, "r") do |f|
+    f.each do |line|
+      fcontent << line
+      if line.include? includestr
+        abort "This project is already kumafied!"
+      end
+    end
+  end
+  
+  File.open(file, "w") do |f|
+    fcontent.each_line do |line|
+      f.print line
+      if line.include? "load 'deploy' if respond_to?(:namespace)"
+        f.print includestr + "\r\n"
+      end
+    end
+  end
+end
+
+puts "[done] project kumafied!"

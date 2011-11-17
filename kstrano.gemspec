@@ -12,6 +12,9 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.has_rdoc    = false
   
+  s.bindir = "bin"
+  s.executables << "kumafy"
+  
   s.author      = "Kunstmaan"
   s.email       = 'hello@kunstmaan.be'
   s.homepage    = 'http://www.kunstmaan.be'
