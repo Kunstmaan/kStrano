@@ -1,7 +1,7 @@
 set :jenkins_base_uri, "http://jenkins.uranus.kunstmaan.be/jenkins" 
 set :jenkins_base_job_name, "Default"
 
-set :campfire_room, "OpenMercury.NEXT"
+set :campfire_room, "Off-Topic"
 set :campfire_token, "3b2b697bb5ebd879f00cb5cf7ebe1d3b5377768e" ## kbot
 set :campfire_account, "Kunstmaan"
 
