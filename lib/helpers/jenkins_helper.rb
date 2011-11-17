@@ -2,7 +2,7 @@ module Kumastrano
   class JenkinsHelper
     
     require 'cgi'
-    require "net/http"
+    require 'net/http'
     require 'uri'
     require 'json'
     

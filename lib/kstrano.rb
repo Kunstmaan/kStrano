@@ -7,10 +7,20 @@ set :campfire_account, "Kunstmaan"
 
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
+require "#{File.dirname(__FILE__)}/helpers/airbrake_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"  
 require 'rexml/document'
 require 'broach'
 require 'etc'
+
+namespace :airbrake do
+  
+  desc  "Make a deploy (this is for testing)"
+  task:notify do
+    Kumastrano::AirbrakeHelper.notify
+  end
+  
+end
 
 namespace :campfire do
   
