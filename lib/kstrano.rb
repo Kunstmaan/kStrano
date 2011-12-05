@@ -22,8 +22,8 @@ namespace :airbrake do
     if !airbrake_api_key.nil?
       revision = Kumastrano::GitHelper::commit_hash
       repository = Kumastrano::GitHelper::origin_url
-      ## TODO: environment
-      success = Kumastrano::AirbrakeHelper.notify airbrake_api_key, revision, repository
+      env ||= "production"
+      success = Kumastrano::AirbrakeHelper.notify airbrake_api_key, revision, repository, env
       Kumastrano.say "Failed notifying airbrake of the new deploy" unless success
     end
   end
