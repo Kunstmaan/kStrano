@@ -1,23 +1,31 @@
 set :jenkins_base_uri, "http://jenkins.uranus.kunstmaan.be/jenkins" 
 set :jenkins_base_job_name, "Default"
 
-set :campfire_room, "Off-Topic"
+set :campfire_room, nil
 set :campfire_token, "3b2b697bb5ebd879f00cb5cf7ebe1d3b5377768e" ## kbot
 set :campfire_account, "Kunstmaan"
+
+set :airbrake_api_key, nil
 
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/airbrake_helper.rb"
+require "#{File.dirname(__FILE__)}/helpers/campfire_helper.rb"  
 require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"  
 require 'rexml/document'
-require 'broach'
 require 'etc'
 
 namespace :airbrake do
   
-  desc  "Make a deploy (this is for testing)"
+  desc  "Register a deploy with airbrake.io"
   task:notify do
-    Kumastrano::AirbrakeHelper.notify
+    if !airbrake_api_key.nil?
+      revision = Kumastrano::GitHelper::commit_hash
+      repository = Kumastrano::GitHelper::origin_url
+      ## TODO: environment
+      success = Kumastrano::AirbrakeHelper.notify airbrake_api_key, revision, repository
+      Kumastrano.say "Failed notifying airbrake of the new deploy" unless success
+    end
   end
   
 end
@@ -26,17 +34,11 @@ namespace :campfire do
   
   desc  "Say something on campfire"
   task:say do
-    
-    Broach.settings = {
-      'account' => campfire_account,
-      'token' => campfire_token,
-      'use_ssl' => true
-    }
-    
-    room = Broach::Room.find_by_name campfire_room
-    message = ARGV.join(' ').gsub('campfire:say', '')
-    
-    room.speak message
+    if !campfire_room.nil?
+      message = ARGV.join(' ').gsub('campfire:say', '')
+      Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, message
+      exit
+    end
   end
   
 end
@@ -103,16 +105,7 @@ namespace :jenkins do
         message = "failed"
       end
       
-      Broach.settings = {
-        'account' => campfire_account,
-        'token' => campfire_token,
-        'use_ssl' => true
-      }
-      room = Broach::Room.find_by_name campfire_room
-
-      if !room.nil?
-        room.speak "#{Etc.getlogin.capitalize} just builded a new version of #{current_branch} on #{application} and it #{message}. You can view the results here #{current_job_url}/lastBuild."
-      end
+      Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} just builded a new version of #{current_branch} on #{application} and it #{message}. You can view the results here #{current_job_url}/lastBuild."
     else
       Kumastrano.say "no job found for #{job_name}, cannot build"
     end
@@ -120,6 +113,11 @@ namespace :jenkins do
   
 end
 
+## Capistrano callbacks ##
+
+# Before deploy:
+## Check if there is a build on jenkins. If none is available, it will create one.
+## Notify on Campfire what the deployer did.
 before :deploy do
   ## Allways fetch the latest information from git
   Kumastrano::GitHelper.fetch
@@ -134,128 +132,121 @@ before :deploy do
     ## No job exists for the current branch, we'll create a job.
     if Kumastrano.ask "no job found for the current branch, do you want to create a job for #{current_branch} on #{application}?"
       current_job_url = jenkins::create_job
-    else
-      exit
     end
   end
   
-  ## If a job exists, get info of the lastBuild
-  last_build_info = Kumastrano::JenkinsHelper.build_info current_job_url
-  result = last_build_info['result'] ## SUCCESS or FAILURE
-  build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+  if !current_job_url.nil?
+    ## we have a job url, get info of the lastBuild
+    last_build_info = Kumastrano::JenkinsHelper.build_info current_job_url
+    result = last_build_info['result'] ## SUCCESS or FAILURE
+    build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
   
-  if !build_hash.nil?
-    Kumastrano.say "latest build found with hash #{build_hash}, the hash of the current HEAD is #{current_hash}"
-    
-    if build_hash == current_hash
-      if "SUCCESS" == result
-        ## The hash of the last build is the same as my hash we can deploy
-        can_deploy = true
-      else
-        ## The hash of the last build is the same as the current hash, but the build failed.
-        if Kumastrano.ask "the last build for the branch #{current_branch} for commit #{current_hash} failed, do you want to build again?"
-          prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-          Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-          result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
-          new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-          if !result.nil? && !new_build_hash.nil? && new_build_hash = current_hash
-            can_deploy = true
-          else
-            Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
-          end
+    if !build_hash.nil?
+      if build_hash == current_hash
+        if "SUCCESS" == result
+          ## The hash of the last build is the same as my hash we can deploy
+          can_deploy = true
         else
-          exit
+          ## The hash of the last build is the same as the current hash, but the build failed.
+          if Kumastrano.ask "the last build for the branch #{current_branch} for commit #{current_hash} failed, do you want to build again?"
+            prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+            Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+            result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
+            new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+            if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+              can_deploy = true
+            else
+              Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
+            end
+          end
+        end
+      else
+        merge_base = Kumastrano::GitHelper.merge_base(build_hash, current_hash)
+        if merge_base == build_hash
+          ## The build commit is an ancestor of HEAD        
+          if Kumastrano.ask "the last build for the branch #{current_branch} is from an older commit do you want to build again? (jenkins=#{build_hash}, local=#{current_hash})"
+            prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+            Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+            result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
+            new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+            if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+              can_deploy = true
+            else
+              Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
+            end
+          end
+        elsif merge_base == current_hash
+          ## The current HEAD is an ancestor of the build hash
+          Kumastrano.say "the latest build is of a newer commit, someone else is probably working on the same branch, try updating your local repository first. (jenkins=#{build_hash}, local=#{current_hash})"
+        else
+          ## Something is wrong, we don't know what try building again
+          if Kumastrano.ask "the latest build isn't a valid build, do you want to try building again? (jenkins=#{build_hash}, local=#{current_hash})"
+            prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+            Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+            result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
+            new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+            if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+              can_deploy = true
+            else
+              Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
+            end
+          end
         end
       end
     else
-      merge_base = Kumastrano::GitHelper.merge_base(build_hash, current_hash)
-      if merge_base == build_hash
-        ## The build commit is an ancestor of HEAD        
-        if Kumastrano.ask "the last build for the branch #{current_branch} is from an older commit do you want to build again?"
-          prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-          Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-          result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
-          new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-          if !result.nil? && !new_build_hash.nil? && new_build_hash = current_hash
-            can_deploy = true
-          else
-            Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
-          end
+      ## No build found, try building it
+      if Kumastrano.ask "no build found, do you want to try building it?"
+        prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+        Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+        result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
+        new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+        if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+          can_deploy = true
         else
-          exit
-        end
-      elsif merge_base == current_hash
-        ## The current HEAD is an ancestor of the build hash
-        Kumastrano.say "the latest build is of a newer commit, someone else is probably working on the same branch, try updating your local repository first"
-        exit
-      else
-        ## Something is wrong, we don't know what try building again
-        if Kumastrano.ask "the latest build isn't a valid build, do you want to try building again?"
-          prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-          Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-          result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
-          new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-          if !result.nil? && !new_build_hash.nil? && new_build_hash = current_hash
-            can_deploy = true
-          else
-            Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
-          end
-        else
-          exit
+          Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
         end
       end
-    end
-  else
-    ## No build found, try building it
-    if Kumastrano.ask "no build found, do you want to try building it?"
-      prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-      Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-      result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url
-      new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-      if !result.nil? && !new_build_hash.nil? && new_build_hash = current_hash
-        can_deploy = true
-      else
-        Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
-      end
-    else
-      exit
     end
   end
   
-  Broach.settings = {
-    'account' => campfire_account,
-    'token' => campfire_token,
-    'use_ssl' => true
-  }
-  room = Broach::Room.find_by_name campfire_room
-
   if !can_deploy
-    if Kumastrano.ask "no valid build found for #{current_branch}, do you still want to deploy?"
-      if !room.nil?
-        room.speak "#{Etc.getlogin.capitalize} ignored the fact there was something wrong with #{current_branch} on #{application} and still went on with deploying it!!"
-      end
+    if Kumastrano.ask "no valid build found for #{current_hash} on branch #{current_branch}, do you still want to deploy?"
+      Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} ignored the fact there was something wrong with #{current_branch} on #{application} and still went on with deploying it!!"
     else
-      if !room.nil?
-        room.speak "#{Etc.getlogin.capitalize} wanted to deploy #{current_branch} on #{application} but there is something wrong with the code, so he cancelled it!"
-      end
+      Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} wanted to deploy #{current_branch} on #{application} but there is something wrong with the code, so he cancelled it!"
       exit
     end
   else
-    if !room.nil?
-      room.speak "#{Etc.getlogin.capitalize} is deploying #{current_branch} for #{application}"
-    end
+    Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} is deploying #{current_branch} for #{application}"
   end
 end
 
+# Before update_code:
+## Make the cached_copy readable for the current user
+before "deploy:update_code" do
+  user = Etc.getlogin
+  sudo "chown -R #{user}:#{user} #{shared_path}/cached-copy"
+end
+
+# After update_code:
+## Fix the permissions of the cached_copy so that it's readable for the project user
+after "deploy:update_code" do
+  sudo "chown -R #{application}:#{application} #{shared_path}/cached-copy"
+end
+
+# After update_code:
+## Create the parameters.ini if it's a symfony project
+## Fix the permissions of the latest release, so that it's readable for the project user
+before "deploy:finalize_update" do
+  try_sudo "if [ -f #{latest_release}/paramDecode ] ; then cd #{latest_release} && ./paramDecode fi" # Symfony specific: will generate the parameters.ini
+  sudo "chown -R #{application}:#{application} #{latest_release}"
+end
+
+# After deploy:
+## Notify the people on campfire of this deploy
+## Notify airbrake to add a new deploy to the deploy history
 after :deploy do
-  Broach.settings = {
-    'account' => campfire_account,
-    'token' => campfire_token,
-    'use_ssl' => true
-  }
-  room = Broach::Room.find_by_name campfire_room
-  
-  if !room.nil?
-    room.speak "#{Etc.getlogin.capitalize} successfuly deployed #{current_branch} for #{application}"
-  end
+  current_branch = Kumastrano::GitHelper.branch_name
+  Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} successfuly deployed #{current_branch} for #{application}"
+  airbrake::notify
 end
