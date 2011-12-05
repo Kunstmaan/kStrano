@@ -225,20 +225,20 @@ end
 ## Make the cached_copy readable for the current user
 before "deploy:update_code" do
   user = Etc.getlogin
-  sudo "chown -R #{user}:#{user} #{shared_path}/cached-copy"
+  sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chown -R #{user}:#{user} #{shared_path}/cached-copy; fi'" # rsync_with_remote_cache
 end
 
 # After update_code:
 ## Fix the permissions of the cached_copy so that it's readable for the project user
 after "deploy:update_code" do
-  sudo "chown -R #{application}:#{application} #{shared_path}/cached-copy"
+  sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chown -R #{application}:#{application} #{shared_path}/cached-copy; fi'" # rsync_with_remote_cache
 end
 
 # After update_code:
 ## Create the parameters.ini if it's a symfony project
 ## Fix the permissions of the latest release, so that it's readable for the project user
 before "deploy:finalize_update" do
-  try_sudo "if [ -f #{latest_release}/paramDecode ] ; then cd #{latest_release} && ./paramDecode fi" # Symfony specific: will generate the parameters.ini
+  sudo "sh -c 'if [ -f #{latest_release}/paramDecode ] ; then cd #{latest_release} && ./paramDecode; fi'" # Symfony specific: will generate the parameters.ini
   sudo "chown -R #{application}:#{application} #{latest_release}"
 end
 
