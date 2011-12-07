@@ -2,12 +2,214 @@
 
 require 'optparse'
 require 'fileutils'
+require 'highline'
+require 'net/http'
+require 'uri'
+
+DEPLOY_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/deploy.rb"
+PRODUCTION_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/production.rb"
+STAGING_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/staging.rb"
+
+BUILD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/build.xml"
+PHPCS_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpcs.xml"
+PHPMD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpmd.xml"
+
+def update_capfile(base, context)
+  file = File.join(base, "Capfile")
+
+  if !File.exists?("Capfile")
+    abort "Make sure the project has been capified or capifonied."
+  else
+    includestr = "load Gem.find_files('kstrano.rb').last.to_s"
+    fcontent = ""
+    File.open(file, "r") do |f|
+      f.each do |line|
+        fcontent << line
+        if line.include? includestr
+          abort "This project is already kumafied!"
+        end
+      end
+    end
+
+    File.open(file, "w") do |f|
+      fcontent.each_line do |line|
+        if line.include? "load 'app/config/deploy'"
+          f.print includestr + "\r\n"
+        end
+        f.print line
+      end
+    end
+  end
+end
+
+def update_deploy_config(ui, base, context)
+  
+  deploy = File.join(base, "app", "config", "deploy.rb")
+  write_deploy = true
+  if File.exists?(deploy)
+    overwrite = ui.ask("The file deplopy.rb already exists, do you want to override it?  ") { |q| q.default = 'n' }
+    if !overwrite.match(/^y/)
+      write_deploy = false
+    end
+  end
+  
+  if write_deploy
+    deploy_gist = get_plain_secure(DEPLOY_GIST).body
+    context["app_name"] ||= ui.ask("What's the name of the application?")
+    app_name = context["app_name"]
+    deploy_gist.gsub!(/(:application,\s)(\"\")/, '\1' + "\"#{app_name}\"")
+    deploy_gist.gsub!(/(:admin_runner,\s)(\"\")/, '\1' + "\"#{app_name}\"")
+
+    campfire_room = ui.ask("What's the name of the campfire room for this project?")
+    if !campfire_room.nil? && !campfire_room.empty?
+      deploy_gist.gsub!(/(:campfire_room,\s)(nil)/, '\1' + "\"#{campfire_room}\"")
+      context["campfire_room"] = campfire_room
+    end
+
+    airbrake_api_key = ui.ask("What's the api key of this project for airbrake?")
+    if !airbrake_api_key.nil? && !airbrake_api_key.empty?
+      deploy_gist.gsub!(/(:airbrake_api_key,\s)(nil)/, '\1' + "\"#{airbrake_api_key}\"")
+      context["airbrake_api_key"] = airbrake_api_key
+    end
+    
+    File.open(deploy, "w") do |f|
+      deploy_gist.each_line do |line|
+        f.print line
+      end
+    end
+  end
+  
+  {
+    "production" => PRODUCTION_GIST, 
+    "staging" => STAGING_GIST
+  }.each do |env, gist|
+    file = File.join(base, "app", "config", "deploy", "#{env}.rb")
+    write = true
+    
+    if File.exists?(deploy)
+      overwrite = ui.ask("The file #{env}.rb already exists, do you want to override it?  ") { |q| q.default = 'n' }
+      if !overwrite.match(/^y/)
+        write = false
+      end
+    end
+    
+    if write
+      gist_body = get_plain_secure(gist).body
+      server = ui.ask("On which server is the #{env} environment deployed?")
+      if !server.match(/^*\.kunstmaan\.be$/)
+        server = "#{server}.kunstmaan.be"
+      end
+      
+      gist_body.gsub!(/(:domain,\s)(\"\")/, '\1' + "\"#{server}\"")
+
+      File.open(file, "w") do |f|
+        gist_body.each_line do |line|
+          f.print line
+        end
+      end
+    end
+  end
+  
+end
+
+def update_jenkins_config(ui, base, context)
+  file = File.join(base, "build.xml")
+  write = true
+
+  if File.exists?(file)
+    overwrite = ui.ask("The file build.xml already exists, do you want to override it?  ") { |q| q.default = 'n' }
+    if !overwrite.match(/^y/)
+      write = false
+    end
+  end
+
+  if write
+    gist_body = get_plain_secure(BUILD_GIST).body
+    
+    context["app_name"] ||= ui.ask("What's the name of the application?")
+    app_name = context["app_name"]
+    gist_body.gsub!(/(\<project\sname=)(\"\")/, '\1' + "\"#{app_name}\"")
+  
+    File.open(file, "w") do |f|
+      gist_body.each_line do |line|
+        f.print line
+      end
+    end
+  end
+  
+  build_dir = File.join(base, "build")
+  Dir.mkdir(build_dir) unless File.directory?(build_dir)
+  
+  {
+    "phpcs.xml" => PHPCS_GIST, 
+    "phpmd.xml" => PHPMD_GIST
+  }.each do |fname, gist|
+    file = File.join(build_dir, fname)
+    write = true
+    
+    if File.exists?(file)
+      overwrite = ui.ask("The file #{fname} already exists, do you want to override it?  ") { |q| q.default = 'n' }
+      if !overwrite.match(/^y/)
+        write = false
+      end
+    end
+    
+    if write
+      gist_body = get_plain_secure(gist).body
+      
+      File.open(file, "w") do |f|
+        gist_body.each_line do |line|
+          f.print line
+        end
+      end
+    end
+  end
+  
+end
+
+def get_plain_secure(url)
+  uri = URI.parse url
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  http.start { |http| http.get(uri.path, {}) }
+end
+
+def validate_path
+  if ARGV.empty?
+    abort "Please specify the directory to kumafy, e.g. `#{File.basename($0)} .'"
+  elsif !File.exists?(ARGV.first)
+    abort "`#{ARGV.first}' does not exist."
+  elsif !File.directory?(ARGV.first)
+    abort "`#{ARGV.first}' is not a directory."
+  elsif ARGV.length > 1
+    abort "Too many arguments; please specify only the directory to kumafy."
+  end
+end
+
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [path]"
 
   opts.on("-h", "--help", "Displays this help info") do
     puts opts
+    exit 0
+  end
+  
+  opts.on("-c", "--config", "Creates the configuration files needed for deployment") do
+    validate_path
+    ui = HighLine.new
+    base = ARGV.shift
+    context = Hash.new
+    update_deploy_config ui, base, context
+    exit 0
+  end
+  
+  opts.on("-j", "--jenkins", "Creates the jenkins configuration files for this project") do
+    validate_path
+    ui = HighLine.new
+    base = ARGV.shift
+    context = Hash.new
+    update_jenkins_config ui, base, context
     exit 0
   end
 
@@ -20,41 +222,14 @@ OptionParser.new do |opts|
   end
 end
 
-if ARGV.empty?
-  abort "Please specify the directory to kumafy, e.g. `#{File.basename($0)} .'"
-elsif !File.exists?(ARGV.first)
-  abort "`#{ARGV.first}' does not exist."
-elsif !File.directory?(ARGV.first)
-  abort "`#{ARGV.first}' is not a directory."
-elsif ARGV.length > 1
-  abort "Too many arguments; please specify only the directory to kumafy."
-end
+validate_path
 
+ui = HighLine.new
 base = ARGV.shift
-file = File.join(base, "Capfile")
+context = Hash.new
 
-if !File.exists?("Capfile")
-  abort "Make sure the project has been capified or capifonied."
-else
-  includestr = "load Gem.find_files('kstrano.rb').last.to_s"
-  fcontent = ""
-  File.open(file, "r") do |f|
-    f.each do |line|
-      fcontent << line
-      if line.include? includestr
-        abort "This project is already kumafied!"
-      end
-    end
-  end
-  
-  File.open(file, "w") do |f|
-    fcontent.each_line do |line|
-      f.print line
-      if line.include? "load 'deploy' if respond_to?(:namespace)"
-        f.print includestr + "\r\n"
-      end
-    end
-  end
-end
+update_capfile base, context
+update_deploy_config ui, base, context
+update_jenkins_config ui, base, context
 
 puts "[done] project kumafied!"

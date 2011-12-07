@@ -22,4 +22,5 @@ Gem::Specification.new do |s|
   s.add_dependency(%q<capistrano>, [">= 2.9.0"])
   s.add_dependency(%q<json>, [">= 1.6.1"])
   s.add_dependency(%q<broach>, [">= 0.2.1"])
+  s.add_dependency(%q<highline>, [">= 1.6.8"])
 end

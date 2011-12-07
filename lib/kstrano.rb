@@ -17,8 +17,8 @@ require 'etc'
 
 namespace :airbrake do
   
-  desc  "Register a deploy with airbrake.io"
-  task:notify do
+  desc "Register a deploy with airbrake.io"
+  task :notify do
     if !airbrake_api_key.nil?
       revision = Kumastrano::GitHelper::commit_hash
       repository = Kumastrano::GitHelper::origin_url
@@ -244,7 +244,7 @@ end
 ## Make the cached_copy readable for the current user
 before "deploy:update_code" do
   user = Etc.getlogin
-  sudo "sh -c 'if [ ! -d #{shared_path}/cached-copy ] ; then mkdir -p #{shared_path}/cached-copy; fi'" if deploy_via = :rsync_with_remote_cache
+  sudo "sh -c 'if [ ! -d #{shared_path}/cached-copy ] ; then mkdir -p #{shared_path}/cached-copy; fi'" if deploy_via == :rsync_with_remote_cache
   sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chown -R #{user}:#{user} #{shared_path}/cached-copy; fi'" # rsync_with_remote_cache
 end
 
@@ -254,7 +254,7 @@ after "deploy:update_code" do
   sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chown -R #{application}:#{application} #{shared_path}/cached-copy; fi'" # rsync_with_remote_cache
 end
 
-# After update_code:
+# Before finalize_update:
 ## Create the parameters.ini if it's a symfony project
 ## Fix the permissions of the latest release, so that it's readable for the project user
 before "deploy:finalize_update" do
