@@ -14,9 +14,9 @@ module Kumastrano
     Capistrano::CLI.ui.say("  * #{text}")
   end
 
-  def ask(question)
+  def ask(question, default='n')
     agree = Capistrano::CLI.ui.agree("    #{question} ") do |q|
-      q.default = 'n'
+      q.default = default
     end
 
     agree

@@ -4,6 +4,7 @@ require 'optparse'
 require 'fileutils'
 require 'highline'
 require 'net/http'
+require 'net/https'
 require 'uri'
 
 DEPLOY_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/deploy.rb"
@@ -14,7 +15,7 @@ BUILD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/build.xml"
 PHPCS_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpcs.xml"
 PHPMD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpmd.xml"
 
-def update_capfile(base, context)
+def update_capfile(base, context, force)
   file = File.join(base, "Capfile")
 
   if !File.exists?("Capfile")
@@ -26,7 +27,8 @@ def update_capfile(base, context)
       f.each do |line|
         fcontent << line
         if line.include? includestr
-          abort "This project is already kumafied!"
+          abort "This project is already kumafied!" unless force
+          return
         end
       end
     end
@@ -42,7 +44,7 @@ def update_capfile(base, context)
   end
 end
 
-def update_deploy_config(ui, base, context)
+def update_deploy_config(ui, base, context, force)
   
   deploy = File.join(base, "app", "config", "deploy.rb")
   write_deploy = true
@@ -79,11 +81,14 @@ def update_deploy_config(ui, base, context)
     end
   end
   
+  deploy_dir = File.join(base, "app", "config", "deploy")
+  Dir.mkdir(deploy_dir) unless File.directory?(deploy_dir)
+  
   {
     "production" => PRODUCTION_GIST, 
     "staging" => STAGING_GIST
   }.each do |env, gist|
-    file = File.join(base, "app", "config", "deploy", "#{env}.rb")
+    file = File.join(base, deploy_dir, "#{env}.rb")
     write = true
     
     if File.exists?(deploy)
@@ -96,7 +101,7 @@ def update_deploy_config(ui, base, context)
     if write
       gist_body = get_plain_secure(gist).body
       server = ui.ask("On which server is the #{env} environment deployed?")
-      if !server.match(/^*\.kunstmaan\.be$/)
+      if !server.match(/^.*\.kunstmaan\.be$/)
         server = "#{server}.kunstmaan.be"
       end
       
@@ -112,7 +117,7 @@ def update_deploy_config(ui, base, context)
   
 end
 
-def update_jenkins_config(ui, base, context)
+def update_jenkins_config(ui, base, context, force)
   file = File.join(base, "build.xml")
   write = true
 
@@ -170,7 +175,8 @@ end
 def get_plain_secure(url)
   uri = URI.parse url
   http = Net::HTTP.new(uri.host, uri.port)
-  http.use_ssl = true
+  http.use_ssl = uri.is_a?(URI::HTTPS)
+  http.verify_mode = OpenSSL::SSL::VERIFY_NONE if http.use_ssl?
   http.start { |http| http.get(uri.path, {}) }
 end
 
@@ -186,6 +192,7 @@ def validate_path
   end
 end
 
+force = false
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [path]"
@@ -200,7 +207,7 @@ OptionParser.new do |opts|
     ui = HighLine.new
     base = ARGV.shift
     context = Hash.new
-    update_deploy_config ui, base, context
+    update_deploy_config ui, base, context, force
     exit 0
   end
   
@@ -209,8 +216,12 @@ OptionParser.new do |opts|
     ui = HighLine.new
     base = ARGV.shift
     context = Hash.new
-    update_jenkins_config ui, base, context
+    update_jenkins_config ui, base, context, force
     exit 0
+  end
+  
+  opts.on("-f", "--force", "This will force the kumafying of the project") do
+    force = true
   end
 
   begin
@@ -228,8 +239,8 @@ ui = HighLine.new
 base = ARGV.shift
 context = Hash.new
 
-update_capfile base, context
-update_deploy_config ui, base, context
-update_jenkins_config ui, base, context
+update_capfile base, context, force
+update_deploy_config ui, base, context, force
+update_jenkins_config ui, base, context, force
 
 puts "[done] project kumafied!"
