@@ -96,8 +96,8 @@ namespace :jenkins do
       prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
       Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
       
-      result = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
-      
+      result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
+
       message = ""
       if result
         Kumastrano.say "the build was succesful"
