@@ -14,6 +14,7 @@ STAGING_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/staging.rb"
 BUILD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/build.xml"
 PHPCS_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpcs.xml"
 PHPMD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpmd.xml"
+PHPUNIT_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpunit.xml.dist"
 
 def update_capfile(base, context, force)
   file = File.join(base, "Capfile")
@@ -49,7 +50,7 @@ def update_deploy_config(ui, base, context, force)
   deploy = File.join(base, "app", "config", "deploy.rb")
   write_deploy = true
   if File.exists?(deploy)
-    overwrite = ui.ask("The file deplopy.rb already exists, do you want to override it?  ") { |q| q.default = 'n' }
+    overwrite = ui.ask("The file #{deploy} already exists, do you want to override it?  ") { |q| q.default = 'n' }
     if !overwrite.match(/^y/)
       write_deploy = false
     end
@@ -92,7 +93,7 @@ def update_deploy_config(ui, base, context, force)
     write = true
     
     if File.exists?(deploy)
-      overwrite = ui.ask("The file #{env}.rb already exists, do you want to override it?  ") { |q| q.default = 'n' }
+      overwrite = ui.ask("The file #{file} already exists, do you want to override it?  ") { |q| q.default = 'n' }
       if !overwrite.match(/^y/)
         write = false
       end
@@ -122,7 +123,7 @@ def update_jenkins_config(ui, base, context, force)
   write = true
 
   if File.exists?(file)
-    overwrite = ui.ask("The file build.xml already exists, do you want to override it?  ") { |q| q.default = 'n' }
+    overwrite = ui.ask("The file #{file} already exists, do you want to override it?  ") { |q| q.default = 'n' }
     if !overwrite.match(/^y/)
       write = false
     end
@@ -146,14 +147,14 @@ def update_jenkins_config(ui, base, context, force)
   Dir.mkdir(build_dir) unless File.directory?(build_dir)
   
   {
-    "phpcs.xml" => PHPCS_GIST, 
-    "phpmd.xml" => PHPMD_GIST
-  }.each do |fname, gist|
-    file = File.join(build_dir, fname)
+    File.join(build_dir, "phpcs.xml") => PHPCS_GIST, 
+    File.join(build_dir, "phpmd.xml") => PHPMD_GIST,
+    File.join(base, "app", "phpunit.xml.dist") => PHPUNIT_GIST
+  }.each do |file, gist|
     write = true
     
     if File.exists?(file)
-      overwrite = ui.ask("The file #{fname} already exists, do you want to override it?  ") { |q| q.default = 'n' }
+      overwrite = ui.ask("The file #{file} already exists, do you want to override it?  ") { |q| q.default = 'n' }
       if !overwrite.match(/^y/)
         write = false
       end
