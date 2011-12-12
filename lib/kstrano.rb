@@ -262,6 +262,7 @@ before "deploy:finalize_update" do
   sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chmod -R ug+rx #{latest_release}/paramDecode; fi'"
   sudo "sh -c 'if [ -f #{latest_release}/paramDecode ] ; then cd #{latest_release} && ./paramDecode; fi'" # Symfony specific: will generate the parameters.ini
   sudo "chown -R #{application}:#{application} #{latest_release}"
+  sudo "setfacl -R -m group:admin:rwx #{latest_release}"
 end
 
 # After deploy:
@@ -271,4 +272,5 @@ after :deploy do
   current_branch = Kumastrano::GitHelper.branch_name
   Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} successfuly deployed #{current_branch} for #{application}"
   airbrake::notify
+  deploy::cleanup ## cleanup old releases
 end

@@ -89,10 +89,10 @@ def update_deploy_config(ui, base, context, force)
     "production" => PRODUCTION_GIST, 
     "staging" => STAGING_GIST
   }.each do |env, gist|
-    file = File.join(base, deploy_dir, "#{env}.rb")
+    file = File.join(deploy_dir, "#{env}.rb")
     write = true
     
-    if File.exists?(deploy)
+    if File.exists?(file)
       overwrite = ui.ask("The file #{file} already exists, do you want to override it?  ") { |q| q.default = 'n' }
       if !overwrite.match(/^y/)
         write = false
