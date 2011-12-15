@@ -17,6 +17,20 @@ require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 require 'rexml/document'
 require 'etc'
 
+namespace :kuma do
+  
+  desc "Run fixcron for the current project"
+  task :fixcron do
+    sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixcron.py ] ; then cd /opt/kDeploy/tools/; python fixcron.py #{application}; fi'"
+  end
+  
+  desc "Run fixperms for the current project"
+  task :fixperms do
+    sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixperms.py ] ; then cd /opt/kDeploy/tools/; python fixperms.py #{application}; fi'"
+  end
+  
+end
+
 namespace :airbrake do
   
   desc "Register a deploy with airbrake.io"
@@ -273,4 +287,5 @@ after :deploy do
   Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} successfuly deployed #{current_branch} for #{application}"
   airbrake::notify
   deploy::cleanup ## cleanup old releases
+  kuma::fixcron
 end
