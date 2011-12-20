@@ -59,7 +59,7 @@ cd to/your/project/path
 kumafy .
 ```	
 
-As said before [kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command. The configuration files created by kumafy will also be Symfony specific.
+As said before [kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command. The configuration files created by kumafy will also be [Symfony][symfony] specific.
 
 # Available [kStrano][kstrano] commands
 
