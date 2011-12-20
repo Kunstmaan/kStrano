@@ -14,6 +14,7 @@
   * Ubuntu using [Ruby][ruby] (1.8.7), [RubyGems][rubygems] ()
  * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm], which makes installing ruby super easy!
 * [Capistrano Extensions][capistranoext] Gem if you need a multistage configuration, the default configuration uses this. If you don't need this you need to remove stuff from your config file.
+
 ```bash
 gem install capistrano-ext
 ```
@@ -23,6 +24,7 @@ gem install capistrano-ext
 
 * Download the Gem file from the [downloads page on Github](https://github.com/Kunstmaan/kStrano/downloads).
 * Install the Gem
+
 ```bash
 gem install kstrano-0.0.1.gem
 ```
@@ -33,6 +35,7 @@ This needs to be done for using [Capistrano][capistrano] in [Symfony][symfony] p
 
 * Download the Gem file from the [downloads page on Github](https://github.com/Kunstmaan/capifony/downloads).
 * Install the Gem
+
 ```bash
 gem install capifony-2.1.3.gem
 ```
@@ -40,11 +43,14 @@ gem install capifony-2.1.3.gem
 # Configuring your project
 
 * First you need to capify or capifonyfy your project, depending if it's a [Symfony][symfony] project or not.
+
 ```bash
 cd to/your/project/path
 capify . or capifony .
 ```
+
 * After that you can kumafy it.
+
 ```bash
 cd to/your/project/path
 kumafy .
