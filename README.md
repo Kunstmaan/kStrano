@@ -1,6 +1,7 @@
 # Introducing [kStrano][kstrano]
 
 [Capistrano][capistrano] is an open source tool for running scripts on multiple servers. It’s primary use is for easily deploying applications. [kStrano][kstrano] (KumaStrano) is a deployment “recipe” to work with Kunstmaan specific applications to make your job a lot easier. It integrates with:
+
 * [Jenkins][jenkins]
 * [Airbrake][airbrake]
 * [Campfire][campfire]
