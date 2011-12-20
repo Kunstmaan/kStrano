@@ -6,7 +6,7 @@
 * [Airbrake][airbrake]
 * [Campfire][campfire]
 
-When you deploy this will change the [Capistrano][capistrano] deploy flow a bit. It will check if there is a successful build available on [Jenkins][jenkins] for your current commit hash. If not, it will ask if you want to build it again. At the end it will add a Deploy to [Airbrake][airbrake], so that you see which errors occurred after your last deploy. In the mean time it will also say some stuff on the configured [Campfire][campfire] room.
+When you deploy this will change the [Capistrano][capistrano] deploy flow a bit. It will check if there is a successful build available on [Jenkins][jenkins] for your current commit hash. If not, it will ask if you want to build it again. At the end it will add a Deploy to [Airbrake][airbrake], so that you see which exceptions occurred after your last deploy. In the mean time it will also say some stuff on the configured [Campfire][campfire] room.
 
 # Prerequisites
 
