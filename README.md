@@ -5,6 +5,8 @@
 * [Airbrake][airbrake]
 * [Campfire][campfire]
 
+When you deploy this will change the [Capistrano][capistrano] deploy flow a bit. It will check if there is a successful build available on [Jenkins][jenkins] for your current commit hash. If not, it will ask if you want to build it again. At the end it will add a Deploy to [Airbrake][airbrake], so that you see which errors occurred after your last deploy. In the mean time it will also say some stuff on the configured [Campfire][campfire] room.
+
 # Prerequisites
 
 * SSH access to the server you are deploying to
@@ -56,7 +58,16 @@ cd to/your/project/path
 kumafy .
 ```	
 
-As said before [kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command.  
+As said before [kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command. The configuration files created by kumafy will also be Symfony specific.
+
+# Available [kStrano][kstrano] commands
+
+* cap kuma:fixcron, this will run the fixcron command from [kDeploy][kdeploy].
+* cap kuma:fixperms, this will run the fixperms command from [kDeploy][kdeploy].
+* cap airbrake:notify, this registers an airbrake deploy on [Airbrake][airbrake].
+* cap campfire:say, say something as [kBot][kbot] in your room on [Campfire][campfire].
+* cap jenkins:build, try to build your current git commit hash in the branch job on [Jenkins][jenkins].
+* cap jenkins:create_job, try to create a branch job on [Jenkins][jenkins].
 	
 # Future improvements
 
@@ -73,3 +84,5 @@ As said before [kStrano][kstrano] only works with [Symfony][symfony] projects fo
 [rvm]: http://beginrescueend.com/ "Ruby Version Manager"
 [symfony]: http://symfony.com/ "Symfony"
 [capifony]: https://github.com/Kunstmaan/capifony "Capifony"
+[kdeploy]: https://github.com/Kunstmaan/kDeploy "kDeploy"
+[kbot]: https://github.com/Kunstmaan/kBot "kBot"
