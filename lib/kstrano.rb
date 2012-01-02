@@ -153,91 +153,94 @@ end
 before :deploy do
   ## only do this in production environment
   if env == 'production'
-    ## Allways fetch the latest information from git
-    Kumastrano::GitHelper.fetch
-  
     can_deploy = false
     current_branch = Kumastrano::GitHelper.branch_name
     current_hash = Kumastrano::GitHelper.commit_hash
-    job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
-    current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)  
-
-    if current_job_url.nil?
-      ## No job exists for the current branch, we'll create a job.
-      if Kumastrano.ask "no job found for the current branch, do you want to create a job for #{current_branch} on #{application}?", 'y'
-        current_job_url = jenkins::create_job
-      end
-    end
-
-    if !current_job_url.nil?
-      ## we have a job url, get info of the lastBuild
-      last_build_info = Kumastrano::JenkinsHelper.build_info current_job_url
-      result = last_build_info['result'] ## SUCCESS or FAILURE
-      build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+      
+    if Kumastrano::JenkinsHelper.available? jenkins_base_uri
+      ## Allways fetch the latest information from git
+      Kumastrano::GitHelper.fetch
   
-      if !build_hash.nil?
-        if build_hash == current_hash
-          if "SUCCESS" == result
-            ## The hash of the last build is the same as my hash we can deploy
-            can_deploy = true
+      job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
+      current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)  
+
+      if current_job_url.nil?
+        ## No job exists for the current branch, we'll create a job.
+        if Kumastrano.ask "no job found for the current branch, do you want to create a job for #{current_branch} on #{application}?", 'y'
+          current_job_url = jenkins::create_job
+        end
+      end
+
+      if !current_job_url.nil?
+        ## we have a job url, get info of the lastBuild
+        last_build_info = Kumastrano::JenkinsHelper.build_info current_job_url
+        result = last_build_info['result'] ## SUCCESS or FAILURE
+        build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+  
+        if !build_hash.nil?
+          if build_hash == current_hash
+            if "SUCCESS" == result
+              ## The hash of the last build is the same as my hash we can deploy
+              can_deploy = true
+            else
+              ## The hash of the last build is the same as the current hash, but the build failed.
+              if Kumastrano.ask "the last build for the branch #{current_branch} for commit #{current_hash} failed, do you want to build again?", 'y'
+                prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+                Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+                result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
+                new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+                if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+                  can_deploy = true
+                else
+                  Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
+                end
+              end
+            end
           else
-            ## The hash of the last build is the same as the current hash, but the build failed.
-            if Kumastrano.ask "the last build for the branch #{current_branch} for commit #{current_hash} failed, do you want to build again?", 'y'
-              prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-              Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-              result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
-              new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-              if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
-                can_deploy = true
-              else
-                Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
+            merge_base = Kumastrano::GitHelper.merge_base(build_hash, current_hash)
+            if merge_base == build_hash
+              ## The build commit is an ancestor of HEAD        
+              if Kumastrano.ask "the last build for the branch #{current_branch} is from an older commit do you want to build again? (jenkins=#{build_hash}, local=#{current_hash})", 'y'
+                prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+                Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+                result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
+                new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+                if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+                  can_deploy = true
+                else
+                  Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
+                end
+              end
+            elsif merge_base == current_hash
+              ## The current HEAD is an ancestor of the build hash
+              Kumastrano.say "the latest build is of a newer commit, someone else is probably working on the same branch, try updating your local repository first. (jenkins=#{build_hash}, local=#{current_hash})"
+            else
+              ## Something is wrong, we don't know what try building again
+              if Kumastrano.ask "the latest build isn't a valid build, do you want to try building again? (jenkins=#{build_hash}, local=#{current_hash})", 'y'
+                prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+                Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+                result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
+                new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+                if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+                  can_deploy = true
+                else
+                  Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
+                end
               end
             end
           end
         else
-          merge_base = Kumastrano::GitHelper.merge_base(build_hash, current_hash)
-          if merge_base == build_hash
-            ## The build commit is an ancestor of HEAD        
-            if Kumastrano.ask "the last build for the branch #{current_branch} is from an older commit do you want to build again? (jenkins=#{build_hash}, local=#{current_hash})", 'y'
-              prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-              Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-              result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
-              new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-              if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
-                can_deploy = true
-              else
-                Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
-              end
+          ## No build found, try building it
+          if Kumastrano.ask "no build found, do you want to try building it?", 'y'
+            prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
+            Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
+            result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
+            new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
+            if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
+              can_deploy = true
+            else
+              Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
             end
-          elsif merge_base == current_hash
-            ## The current HEAD is an ancestor of the build hash
-            Kumastrano.say "the latest build is of a newer commit, someone else is probably working on the same branch, try updating your local repository first. (jenkins=#{build_hash}, local=#{current_hash})"
-          else
-            ## Something is wrong, we don't know what try building again
-            if Kumastrano.ask "the latest build isn't a valid build, do you want to try building again? (jenkins=#{build_hash}, local=#{current_hash})", 'y'
-              prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-              Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-              result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
-              new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-              if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
-                can_deploy = true
-              else
-                Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
-              end
-            end
-          end
-        end
-      else
-        ## No build found, try building it
-        if Kumastrano.ask "no build found, do you want to try building it?", 'y'
-          prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
-          Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-          result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
-          new_build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-          if !result.nil? && result && !new_build_hash.nil? && new_build_hash = current_hash
-            can_deploy = true
-          else
-            Kumastrano.say "there is still something wrong with #{current_branch} on #{application}, please check manually and try deploying again afterwards!"
           end
         end
       end

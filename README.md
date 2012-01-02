@@ -16,6 +16,7 @@ When you deploy this will change the [Capistrano][capistrano] deploy flow a bit.
   * OSX Lion using [Ruby][ruby] (1.8.7, 1.9.2), [RubyGems][rubygems] (1.8.10)
   * Ubuntu using [Ruby][ruby] (1.8.7), [RubyGems][rubygems] ()
  * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm], which makes installing ruby super easy!
+  * [Tutorial on how to install rvm on ubuntu][rvmtut]
 * [Capistrano Extensions][capistranoext] Gem if you need a multistage configuration, the default configuration uses this. If you don't need this you need to remove stuff from your config file.
 
 ```bash
@@ -83,6 +84,7 @@ As said before [kStrano][kstrano] only works with [Symfony][symfony] projects fo
 [rubygems]: http://rubygems.org/ "RubyGems"
 [capistranoext]: https://github.com/jamis/capistrano-ext "Capistrano Extensions"
 [rvm]: http://beginrescueend.com/ "Ruby Version Manager"
+[rvmtut]: http://rubysource.com/installing-ruby-with-rvm-on-ubuntu/ "Ruby Version Manager Ubuntu tutorial"
 [symfony]: http://symfony.com/ "Symfony"
 [capifony]: https://github.com/Kunstmaan/capifony "Capifony"
 [kdeploy]: https://github.com/Kunstmaan/kDeploy "kDeploy"

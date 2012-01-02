@@ -6,6 +6,11 @@ module Kumastrano
     require 'uri'
     require 'json'
     
+    def self.available?(base_uri)
+      res = get_plain("#{base_uri}")
+      res.code.to_i == 200
+    end
+    
     def self.build_and_wait(job_uri, timeout=300, interval=2)
       success = false
       last_build_info = nil
@@ -83,7 +88,7 @@ module Kumastrano
     end
     
     def self.create_new_job(base_uri, job_name, config)
-      uri = URI.parse("http://jenkins.uranus.kunstmaan.be/jenkins/createItem/api/json")
+      uri = URI.parse("#{base_uri}/createItem/api/json")
       request = Net::HTTP::Post.new(uri.path + "?name=#{CGI.escape(job_name)}")
       request.body = config
       request["Content-Type"] = "application/xml"
