@@ -68,7 +68,8 @@ As said before [kStrano][kstrano] only works with [Symfony][symfony] projects fo
 - Run paramEncode and add app/config/parameters.aes to your github repo
 - Commit the changes
 - Run ```cap deploy:setup```
-- Run ```cap:deploy```
+
+From now on you should be able to run ```cap:deploy``` to deploy the project...
 
 # Available [kStrano][kstrano] commands
 
