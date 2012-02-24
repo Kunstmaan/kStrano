@@ -62,6 +62,14 @@ kumafy .
 
 As said before [kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command. The configuration files created by kumafy will also be [Symfony][symfony] specific.
 
+# Minimal setup
+
+- Add paramEncode / paramDecode to your github repo
+- Run paramEncode and add app/config/parameters.aes to your github repo
+- Commit the changes
+- Run ```cap deploy:setup```
+- Run ```cap:deploy```
+
 # Available [kStrano][kstrano] commands
 
 * cap kuma:fixcron, this will run the fixcron command from [kDeploy][kdeploy].
