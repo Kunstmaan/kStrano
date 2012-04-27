@@ -2,12 +2,14 @@ set :jenkins_base_uri, "http://jenkins.uranus.kunstmaan.be/jenkins"
 set :jenkins_base_job_name, "Default"
 set :jenkins_poll_timeout, 300
 set :jenkins_poll_interval, 2
+set :jenkins_enabled, false
 
 set :campfire_room, nil
 set :campfire_token, "3b2b697bb5ebd879f00cb5cf7ebe1d3b5377768e" ## kbot
 set :campfire_account, "Kunstmaan"
 
 set :airbrake_api_key, nil
+
 
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
@@ -152,7 +154,7 @@ end
 ## Notify on Campfire what the deployer did.
 before :deploy do
   ## only do this in production environment
-  if env == 'production'
+  if env == 'production' and jenkins_enabled
     can_deploy = false
     current_branch = Kumastrano::GitHelper.branch_name
     current_hash = Kumastrano::GitHelper.commit_hash
@@ -256,6 +258,8 @@ before :deploy do
     else
       Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} is deploying #{current_branch} for #{application}"
     end
+  else
+    Kumastrano.say "jenkins on demand is disabled, skipping..."
   end
 end
 

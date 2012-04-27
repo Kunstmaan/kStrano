@@ -69,6 +69,12 @@ As said before [kStrano][kstrano] only works with [Symfony][symfony] projects fo
 - Commit the changes
 - Run ```cap deploy:setup```
 
+To enable Jenkins on demand building, add the following to deploy.rb
+
+```ruby
+set :jenkins_enabled, false, true
+``
+
 From now on you should be able to run ```cap:deploy``` to deploy the project...
 
 # Available [kStrano][kstrano] commands
