@@ -64,10 +64,6 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 * cap campfire:say, say something as [kBot][kbot] in your room on [Campfire][campfire].
 * cap jenkins:build, try to build your current git commit hash in the branch job on [Jenkins][jenkins].
 * cap jenkins:create_job, try to create a branch job on [Jenkins][jenkins].
-	
-# Future improvements
-
-* installing a Gem server on Kunstmaan where we can host our own gems, this will make it easier to install them.
 
 [kstrano]: https://github.com/Kunstmaan/kStrano "kStrano"
 [capistrano]: https://github.com/capistrano/capistrano "Capistrano"
