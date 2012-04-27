@@ -193,6 +193,25 @@ def validate_path
   end
 end
 
+def update_vendors(base)
+    vendors = File.join(base, "bin", "vendors")
+    fcontent = ""
+    File.open(vendors, "r") do |f|
+      f.each do |line|
+        fcontent << line
+      end
+    end
+
+    File.open(vendors, "w") do |f|
+      fcontent.each_line do |line|
+        f.print line
+        if line.include? "git clone %s %s"
+          f.print "            system(sprintf('cd %s && git config core.filemode false', escapeshellarg($installDir)));" + "\r\n"
+        end
+      end
+    end    
+end
+
 force = false
 
 OptionParser.new do |opts|
@@ -247,5 +266,6 @@ puts "[end] kcapifony"
 update_capfile base, context, force
 update_deploy_config ui, base, context, force
 update_jenkins_config ui, base, context, force
+update_vendors base
 
 puts "[done] project kumafied!"
