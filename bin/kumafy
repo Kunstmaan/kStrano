@@ -7,14 +7,14 @@ require 'net/http'
 require 'net/https'
 require 'uri'
 
-DEPLOY_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/deploy.rb"
-PRODUCTION_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/production.rb"
-STAGING_GIST = "https://raw.github.com/gist/089c4f789291ae05b1b5/staging.rb"
+DEPLOY_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/deploy.rb"
+PRODUCTION_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/production.rb"
+STAGING_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/staging.rb"
 
-BUILD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/build.xml"
-PHPCS_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpcs.xml"
-PHPMD_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpmd.xml"
-PHPUNIT_GIST = "https://raw.github.com/gist/64c0c9ce6eb8aa0b9bec/phpunit.xml.dist"
+BUILD_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/build.xml"
+PHPCS_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpcs.xml"
+PHPMD_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpmd.xml"
+PHPUNIT_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpunit.xml.dist"
 
 def update_capfile(base, context, force)
   file = File.join(base, "Capfile")

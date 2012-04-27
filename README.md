@@ -17,11 +17,7 @@ When you deploy this will change the [Capistrano][capistrano] deploy flow a bit.
   * Ubuntu using [Ruby][ruby] (1.8.7), [RubyGems][rubygems] ()
  * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm], which makes installing ruby super easy!
   * [Tutorial on how to install rvm on ubuntu][rvmtut]
-* [Capistrano Extensions][capistranoext] Gem if you need a multistage configuration, the default configuration uses this. If you don't need this you need to remove stuff from your config file.
 
-```bash
-gem install capistrano-ext
-```
 * The project for now has only been tested with [Symfony][symfony] projects, to make it work with [Symfony][symfony] we also need the gem [Capifony][capifony]. We made a forked version of [Capifony][capifony] to work with the server setup at Kunstmaan.
 
 # Installing [kStrano][kstrano]
@@ -68,6 +64,12 @@ As said before [kStrano][kstrano] only works with [Symfony][symfony] projects fo
 - Run paramEncode and add app/config/parameters.aes to your github repo
 - Commit the changes
 - Run ```cap deploy:setup```
+
+To enable Jenkins on demand building, add the following to deploy.rb
+
+```ruby
+set :jenkins_enabled, false, true
+``
 
 From now on you should be able to run ```cap:deploy``` to deploy the project...
 
