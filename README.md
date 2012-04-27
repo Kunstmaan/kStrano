@@ -51,7 +51,7 @@ kumafy .
 To enable Jenkins on demand building, add the following to deploy.rb
 
 ```ruby
-set :jenkins_enabled, false, true
+set :jenkins_enabled, true
 ```
 
 From now on you should be able to run ```cap:deploy``` to deploy the project...
