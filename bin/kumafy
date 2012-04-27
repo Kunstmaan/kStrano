@@ -240,9 +240,9 @@ ui = HighLine.new
 base = ARGV.shift
 context = Hash.new
 
-puts "[start] capifony"
-%x(capifony .)
-puts "[end] capifony"
+puts "[start] kcapifony"
+%x(kcapifony .)
+puts "[end] kcapifony"
 
 update_capfile base, context, force
 update_deploy_config ui, base, context, force
