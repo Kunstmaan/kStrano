@@ -1,11 +1,11 @@
-set :jenkins_base_uri, "http://jenkins.uranus.kunstmaan.be/jenkins" 
+set :jenkins_base_uri, "" 
 set :jenkins_base_job_name, "Default"
 set :jenkins_poll_timeout, 300
 set :jenkins_poll_interval, 2
 set :jenkins_enabled, false
 
 set :campfire_room, nil
-set :campfire_token, "3b2b697bb5ebd879f00cb5cf7ebe1d3b5377768e" ## kbot
+set :campfire_token, "" ## kbot
 set :campfire_account, "Kunstmaan"
 
 set :airbrake_api_key, nil
