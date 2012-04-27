@@ -18,45 +18,28 @@ When you deploy this will change the [Capistrano][capistrano] deploy flow a bit.
  * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm], which makes installing ruby super easy!
   * [Tutorial on how to install rvm on ubuntu][rvmtut]
 
-* The project for now has only been tested with [Symfony][symfony] projects, to make it work with [Symfony][symfony] we also need the gem [Capifony][capifony]. We made a forked version of [Capifony][capifony] to work with the server setup at Kunstmaan.
+* The project for now has only been tested with [Symfony][symfony] projects, to make it work with [Symfony][symfony] we also need the gem [kCapifony][kcapifony]. We made a forked version of [Capifony][kcapifony] to work with the server setup at Kunstmaan.
 
 # Installing [kStrano][kstrano]
 
-* Download the Gem file from the [downloads page on Github](https://github.com/Kunstmaan/kStrano/downloads).
-* Install the Gem
-
 ```bash
-gem install kstrano-0.0.1.gem
+gem install kstrano
 ```
 
-# Installing [Capifony][capifony]
-
-This needs to be done for using [Capistrano][capistrano] in [Symfony][symfony] projects.
-
-* Download the Gem file from the [downloads page on Github](https://github.com/Kunstmaan/capifony/downloads).
-* Install the Gem
+Make sure you have no ther kstrano gems installed
 
 ```bash
-gem install capifony-2.1.3.gem
+gem uninstall kstrano
 ```
 
 # Configuring your project
-
-* First you need to capify or capifonyfy your project, depending if it's a [Symfony][symfony] project or not.
-
-```bash
-cd to/your/project/path
-capify . or capifony .
-```
-
-* After that you can kumafy it.
 
 ```bash
 cd to/your/project/path
 kumafy .
 ```	
 
-As said before [kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command. The configuration files created by kumafy will also be [Symfony][symfony] specific.
+[kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command. The configuration files created by kumafy will also be [Symfony][symfony] specific.
 
 # Minimal setup
 
@@ -97,6 +80,7 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 [rvm]: http://beginrescueend.com/ "Ruby Version Manager"
 [rvmtut]: http://rubysource.com/installing-ruby-with-rvm-on-ubuntu/ "Ruby Version Manager Ubuntu tutorial"
 [symfony]: http://symfony.com/ "Symfony"
-[capifony]: https://github.com/Kunstmaan/capifony "Capifony"
+[capifony]: https://github.com/Kunstmaan/kCapifony "Capifony"
+[kcapifony]: https://github.com/Kunstmaan/kCapifony "kCapifony"
 [kdeploy]: https://github.com/Kunstmaan/kDeploy "kDeploy"
 [kbot]: https://github.com/Kunstmaan/kBot "kBot"
