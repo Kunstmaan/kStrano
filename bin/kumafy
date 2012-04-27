@@ -49,12 +49,12 @@ def update_deploy_config(ui, base, context, force)
   
   deploy = File.join(base, "app", "config", "deploy.rb")
   write_deploy = true
-  if File.exists?(deploy)
-    overwrite = ui.ask("The file #{deploy} already exists, do you want to override it?  ") { |q| q.default = 'n' }
-    if !overwrite.match(/^y/)
-      write_deploy = false
-    end
-  end
+  #if File.exists?(deploy)
+    #overwrite = ui.ask("The file #{deploy} already exists, do you want to override it?  ") { |q| q.default = 'n' }
+    #if !overwrite.match(/^y/)
+    #  write_deploy = false
+    #end
+  #end
   
   if write_deploy
     deploy_gist = get_plain_secure(DEPLOY_GIST).body
@@ -239,6 +239,10 @@ validate_path
 ui = HighLine.new
 base = ARGV.shift
 context = Hash.new
+
+puts "[start] capifony"
+%x(capifony .)
+puts "[end] capifony"
 
 update_capfile base, context, force
 update_deploy_config ui, base, context, force
