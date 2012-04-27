@@ -57,8 +57,9 @@ def update_deploy_config(ui, base, context, force)
   #end
   
   if write_deploy
+    dirname = File.basename(Dir.getwd)
     deploy_gist = get_plain_secure(DEPLOY_GIST).body
-    context["app_name"] ||= ui.ask("What's the name of the application?")
+    context["app_name"] = ui.ask("What's the name of the application?") { |q| q.default = dirname }
     app_name = context["app_name"]
     deploy_gist.gsub!(/(:application,\s)(\"\")/, '\1' + "\"#{app_name}\"")
     deploy_gist.gsub!(/(:admin_runner,\s)(\"\")/, '\1' + "\"#{app_name}\"")
