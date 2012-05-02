@@ -295,4 +295,5 @@ after :deploy do
   airbrake::notify
   deploy::cleanup ## cleanup old releases
   kuma::fixcron
+  sudo "/etc/init.d/php5-fpm reload"
 end
