@@ -10,6 +10,11 @@ set :campfire_account, "Kunstmaan"
 
 set :airbrake_api_key, nil
 
+# PHP binary to execute
+set :php_bin,           "php"
+# Symfony console bin
+set :symfony_console,     app_path + "/console"
+
 
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
@@ -295,5 +300,5 @@ after :deploy do
   airbrake::notify
   deploy::cleanup ## cleanup old releases
   kuma::fixcron
-  sudo "/etc/init.d/php5-fpm reload"
+  try_sudo "sh -c 'cd #{latest_release} && #{php_bin} #{symfony_console} apc:clear'"
 end
