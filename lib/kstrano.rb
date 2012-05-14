@@ -291,6 +291,11 @@ before "deploy:finalize_update" do
   sudo "setfacl -R -m group:admin:rwx #{latest_release}"
 end
 
+before :deploy do
+  Kumastrano.say "executing ssh-add"
+  %x(ssh-add)
+end
+
 # After deploy:
 ## Notify the people on campfire of this deploy
 ## Notify airbrake to add a new deploy to the deploy history
