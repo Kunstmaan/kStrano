@@ -305,5 +305,5 @@ after :deploy do
   airbrake::notify
   deploy::cleanup ## cleanup old releases
   kuma::fixcron
-  try_sudo "sh -c 'cd #{latest_release} && #{php_bin} #{symfony_console} apc:clear'"
+  sudo "/etc/init.d/php5-fpm reload"
 end
