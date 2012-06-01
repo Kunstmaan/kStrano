@@ -25,6 +25,7 @@ set :repository, `git config remote.origin.url`.strip # fetch the repository fro
 set :scm, :git
 ssh_options[:forward_agent] = true # http://help.github.com/deploy-with-capistrano/
 set :deploy_via, :remote_cache #only keeps an online cache
+set :branch, "master"
 
 # Symfony 2
 set :model_manager, "doctrine"
