@@ -306,7 +306,7 @@ after :deploy do
   deploy::cleanup ## cleanup old releases
   kuma::fixcron
   serverproject = domain.split('.')[0]
-  sudo "sh -c 'echo \"<?php if (in_array(@$_SERVER[\'REMOTE_ADDR\'], array(\'127.0.0.1\', \'::1\'))) { apc_clear_cache(); apc_clear_cache(\'user\');  apc_clear_cache(\'opcode\');  echo json_encode(array(\'success\' => true)); } else { die(\'SUPER TOP SECRET\'); }\" > /home/projects/#{serverproject}/site/apcclear.php"
+  sudo "sh -c 'echo \"<?php if (in_array(@$_SERVER[\'REMOTE_ADDR\'], array(\'127.0.0.1\', \'::1\'))) { apc_clear_cache(); apc_clear_cache(\'user\');  apc_clear_cache(\'opcode\');  echo json_encode(array(\'success\' => true)); } else { die(\'SUPER TOP SECRET\'); }\" > /home/projects/#{serverproject}/site/apcclear.php'"
   sudo "chmod 777 /home/projects/#{serverproject}/site/apcclear.php"
   sudo "curl http://#{domain}/apcclear.php"
 end
