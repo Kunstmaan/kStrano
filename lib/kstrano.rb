@@ -1,4 +1,4 @@
-set :jenkins_base_uri, "" 
+set :jenkins_base_uri, ""
 set :jenkins_base_job_name, "Default"
 set :jenkins_poll_timeout, 300
 set :jenkins_poll_interval, 2
@@ -19,27 +19,27 @@ set :symfony_console,     app_path + "/console"
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/jenkins_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/airbrake_helper.rb"
-require "#{File.dirname(__FILE__)}/helpers/campfire_helper.rb"  
-require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"  
+require "#{File.dirname(__FILE__)}/helpers/campfire_helper.rb"
+require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 require 'rexml/document'
 require 'etc'
 
 namespace :kuma do
-  
+
   desc "Run fixcron for the current project"
   task :fixcron do
     sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixcron.py ] ; then cd /opt/kDeploy/tools/; python fixcron.py #{application}; fi'"
   end
-  
+
   desc "Run fixperms for the current project"
   task :fixperms do
     sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixperms.py ] ; then cd /opt/kDeploy/tools/; python fixperms.py #{application}; fi'"
   end
-  
+
 end
 
 namespace :airbrake do
-  
+
   desc "Register a deploy with airbrake.io"
   task :notify do
     if !airbrake_api_key.nil?
@@ -50,11 +50,11 @@ namespace :airbrake do
       Kumastrano.say "Failed notifying airbrake of the new deploy" unless success
     end
   end
-  
+
 end
 
 namespace :campfire do
-  
+
   desc  "Say something on campfire"
   task:say do
     if !campfire_room.nil?
@@ -63,11 +63,11 @@ namespace :campfire do
       exit
     end
   end
-  
+
 end
 
 namespace :jenkins do
-  
+
   desc "create a job for the current branch and application on Jenkins"
   task:create_job do
     ## 1. locate the job in jenkins
@@ -103,20 +103,20 @@ namespace :jenkins do
     else
       Kumastrano.say "there was already a job available on Jenkins for branch #{current_branch} on #{application}"
     end
-    
+
     current_job_url
   end
-  
+
   desc "Try to build the current branch on Jenkins"
   task:build do
     current_job_url = jenkins::create_job
     current_branch = Kumastrano::GitHelper.branch_name
-    
+
     if !current_job_url.nil?
       job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
       prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
       Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
-      
+
       result, last_build_info = Kumastrano::JenkinsHelper.build_and_wait current_job_url, jenkins_poll_timeout, jenkins_poll_interval
 
       message = ""
@@ -127,17 +127,17 @@ namespace :jenkins do
         Kumastrano.say "the build failed"
         message = "failed"
       end
-      
+
       Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} just builded a new version of #{current_branch} on #{application} and it #{message}. You can view the results here #{current_job_url}/lastBuild."
     else
       Kumastrano.say "no job found for #{job_name}, cannot build"
     end
   end
-  
+
 end
 
 namespace :deploy do
-  
+
   task :symlink, :except => { :no_release => true } do
       on_rollback do
         if previous_release
@@ -149,7 +149,7 @@ namespace :deploy do
 
       try_sudo "ln -sfT #{latest_release} #{current_path}"
     end
-  
+
 end
 
 ## Capistrano callbacks ##
@@ -163,13 +163,13 @@ before :deploy do
     can_deploy = false
     current_branch = Kumastrano::GitHelper.branch_name
     current_hash = Kumastrano::GitHelper.commit_hash
-      
+
     if Kumastrano::JenkinsHelper.available? jenkins_base_uri
       ## Allways fetch the latest information from git
       Kumastrano::GitHelper.fetch
-  
+
       job_name = Kumastrano::JenkinsHelper.make_safe_job_name(application, current_branch)
-      current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)  
+      current_job_url = Kumastrano::JenkinsHelper.job_url_for_name(jenkins_base_uri, job_name)
 
       if current_job_url.nil?
         ## No job exists for the current branch, we'll create a job.
@@ -183,7 +183,7 @@ before :deploy do
         last_build_info = Kumastrano::JenkinsHelper.build_info current_job_url
         result = last_build_info['result'] ## SUCCESS or FAILURE
         build_hash = Kumastrano::JenkinsHelper.fetch_build_hash_from_build_info(last_build_info, current_branch)
-  
+
         if !build_hash.nil?
           if build_hash == current_hash
             if "SUCCESS" == result
@@ -206,7 +206,7 @@ before :deploy do
           else
             merge_base = Kumastrano::GitHelper.merge_base(build_hash, current_hash)
             if merge_base == build_hash
-              ## The build commit is an ancestor of HEAD        
+              ## The build commit is an ancestor of HEAD
               if Kumastrano.ask "the last build for the branch #{current_branch} is from an older commit do you want to build again? (jenkins=#{build_hash}, local=#{current_hash})", 'y'
                 prev_build = Kumastrano::JenkinsHelper.last_build_number current_job_url
                 Kumastrano.say "start building build ##{(prev_build + 1)} on job #{job_name}, this can take a while"
@@ -252,7 +252,7 @@ before :deploy do
         end
       end
     end
-  
+
     if !can_deploy
       if Kumastrano.ask "no valid build found for #{current_hash} on branch #{current_branch}, do you still want to deploy?"
         Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} ignored the fact there was something wrong with #{current_branch} on #{application} and still went on with deploying it!!"
@@ -302,11 +302,11 @@ end
 after :deploy do
   current_branch = Kumastrano::GitHelper.branch_name
   Kumastrano::CampfireHelper.speak campfire_account, campfire_token, campfire_room, "#{Etc.getlogin.capitalize} successfuly deployed #{current_branch} for #{application}"
-  airbrake::notify
-  deploy::cleanup ## cleanup old releases
-  kuma::fixcron
+  sudo "/etc/init.d/php5-fpm reload"
   serverproject = domain.split('.')[0]
   sudo "sh -c 'curl https://raw.github.com/gist/2868838/ > /home/projects/#{serverproject}/site/apcclear.php'"
   sudo "chmod 777 /home/projects/#{serverproject}/site/apcclear.php"
   sudo "curl http://#{domain}/apcclear.php"
+  kuma::fixcron
+  deploy::cleanup ## cleanup old releases
 end

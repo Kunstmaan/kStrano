@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'kstrano'
-  s.version     = '0.0.15'
+  s.version     = '0.0.17'
   s.summary     = <<-DESC.strip.gsub(/\n\s+/, " ")
     Deploying applications with Capistrano, Jenkins and GIT.
   DESC
@@ -11,14 +11,14 @@ Gem::Specification.new do |s|
   s.files       = Dir.glob("lib/**/*")
   s.require_path = 'lib'
   s.has_rdoc    = false
-  
+
   s.bindir = "bin"
   s.executables << "kumafy"
-  
+
   s.author      = "Kunstmaan"
   s.email       = 'support@kunstmaan.be'
   s.homepage    = 'https://github.com/Kunstmaan/kStrano'
-  
+
   s.add_dependency(%q<capistrano>, [">= 2.12.0"])
   s.add_dependency(%q<capistrano-ext>, [">=1.2.1"])
   s.add_dependency(%q<capistrano_colors>, [">=0.5.5"])
