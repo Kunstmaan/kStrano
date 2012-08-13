@@ -1,7 +1,9 @@
 # PHP binary to execute
-set :php_bin,           "php"
+set :php_bin, "php"
 # Symfony console bin
-set :symfony_console,     app_path + "/console"
+set :symfony_console, app_path + "/console"
+
+set :force_schema, false
 
 
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
@@ -52,9 +54,24 @@ namespace :symfony do
 
   desc "Copy vendors from previous release"
   task :copy_vendors, :except => { :no_release => true } do
-    Kumastrano.say "--> Copying vendors from previous release"
+    pretty_print "--> Copying vendors from previous release"
     try_sudo "mkdir #{latest_release}/vendor"
     try_sudo "sh -c 'if [ -d #{previous_release}/vendor ] ; then cp -a #{previous_release}/vendor/* #{latest_release}/vendor/; fi'"
+    puts_ok
+  end
+
+  namespace :doctrine do
+    namespace :schema do
+
+      desc "Update the database schema."
+      task :update do
+        if Kumastrano.ask "do you want to update the schema?"
+          force = force_schema ? " --force": ""
+          try_sudo "sh -c 'cd #{latest_release} && #{php_bin} #{symfony_console} doctrine:schema:update --env=#{symfony_env_prod} #{force}'", :once => true
+        end
+      end
+
+    end
   end
 
 end
@@ -62,14 +79,27 @@ end
 before "symfony:vendors:install", "symfony:copy_vendors" # Symfony2 2.0.x
 before "symfony:composer:update", "symfony:copy_vendors" # Symfony2 2.1
 
+# Fix the SSH socket so that it's reachable for the project user, this is needed to pass your local ssh keys to github
 before "symfony:vendors:install", "kuma:fix_ssh_socket"
 before "symfony:vendors:reinstall", "kuma:fix_ssh_socket"
 before "symfony:vendors:upgrade", "kuma:fix_ssh_socket"
 before "symfony:composer:update", "kuma:fix_ssh_socket"
+before "symfony:composer:install", "kuma:fix_ssh_socket"
 after "symfony:vendors:install", "kuma:unfix_ssh_socket"
 after "symfony:vendors:reinstall", "kuma:unfix_ssh_socket"
 after "symfony:vendors:upgrade", "kuma:unfix_ssh_socket"
 after "symfony:composer:update", "kuma:unfix_ssh_socket"
+after "symfony:composer:install", "kuma:unfix_ssh_socket"
+
+# ask to update the schema
+after "symfony:vendors:install", "symfony:doctrine:schema:update"
+after "symfony:vendors:reinstall", "symfony:doctrine:schema:update"
+after "symfony:vendors:upgrade", "symfony:doctrine:schema:update"
+after "symfony:composer:update", "symfony:doctrine:schema:update"
+after "symfony:composer:install", "symfony:doctrine:schema:update"
+
+# clear the cache before the warmup
+before "symfony:cache:warmup", "symfony:cache:clear"
 
 # Before update_code:
 ## Make the cached_copy readable for the current user
