@@ -5,7 +5,6 @@ set :symfony_console, app_path + "/console"
 
 set :force_schema, false
 
-
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 require 'rexml/document'
@@ -65,9 +64,8 @@ namespace :symfony do
 
       desc "Update the database schema."
       task :update do
-        if Kumastrano.ask "do you want to update the schema?"
-          force = force_schema ? " --force": ""
-          try_sudo "sh -c 'cd #{latest_release} && #{php_bin} #{symfony_console} doctrine:schema:update --env=#{symfony_env_prod} #{force}'", :once => true
+        if force_schema
+          try_sudo "sh -c 'cd #{latest_release} && #{php_bin} #{symfony_console} doctrine:schema:update --env=#{symfony_env_prod} --force'", :once => true
         end
       end
 
