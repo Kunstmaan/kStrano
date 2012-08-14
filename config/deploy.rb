@@ -29,20 +29,21 @@ set :branch, "master"
 
 # Symfony 2
 set :model_manager, "doctrine"
-set :shared_children, [app_path + "/logs", web_path + "/uploads", "vendor"]
+set :shared_children, [app_path + "/logs", web_path + "/uploads"]
 set :vendors_mode, "install"
 set :update_vendors, true
 set :dump_assetic_assets, true
-set :update_schema, true
-set :force_schema, true
-set :do_migrations, false
-set :setfacl, true
+set :interactive_mode, true
 
-# Campfire
-set :campfire_room, nil
+set :writable_dirs,     ["app/cache", "app/logs"]
+set :webserver_user,    "www-data"
+set :permission_method, :acl
+set :force_schema, false
 
-# Airbrake
-set :airbrake_api_key, nil
-
-# Jenkins
-#:set :jenkins_enabled, true
+# Logging
+# - IMPORTANT = 0
+# - INFO      = 1
+# - DEBUG     = 2
+# - TRACE     = 3
+# - MAX_LEVEL = 3
+logger.level = Logger::MAX_LEVEL

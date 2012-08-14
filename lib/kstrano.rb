@@ -37,7 +37,7 @@ end
 
 namespace :deploy do
 
-  task :symlink, :except => { :no_release => true } do
+  task :create_symlink, :except => { :no_release => true } do
       on_rollback do
         if previous_release
           try_sudo "ln -sf #{previous_release} #{current_path}; true"

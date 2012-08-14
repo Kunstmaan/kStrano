@@ -1,6 +1,5 @@
 set :env, "staging"
+set :symfony_env_prod,  "staging"
 set :domain, ""
-
-set :apache_runner, 'www-data'
 
 set :branch, "staging"
