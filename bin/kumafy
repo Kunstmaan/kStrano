@@ -51,12 +51,6 @@ def update_deploy_config(ui, base, context, force)
   
   deploy = File.join(base, "app", "config", "deploy.rb")
   write_deploy = true
-  #if File.exists?(deploy)
-    #overwrite = ui.ask("The file #{deploy} already exists, do you want to override it?  ") { |q| q.default = 'n' }
-    #if !overwrite.match(/^y/)
-    #  write_deploy = false
-    #end
-  #end
   
   if write_deploy
     dirname = File.basename(Dir.getwd)
@@ -64,18 +58,6 @@ def update_deploy_config(ui, base, context, force)
     app_name = ui.ask("What's the name of the application?") { |q| q.default = dirname }
     deploy_gist.gsub!(/(:application,\s)(\"\")/, '\1' + "\"#{app_name}\"")
     deploy_gist.gsub!(/(:admin_runner,\s)(\"\")/, '\1' + "\"#{app_name}\"")
-
-    campfire_room = ui.ask("What's the name of the campfire room for this project?")
-    if !campfire_room.nil? && !campfire_room.empty?
-      deploy_gist.gsub!(/(:campfire_room,\s)(nil)/, '\1' + "\"#{campfire_room}\"")
-      context["campfire_room"] = campfire_room
-    end
-
-    airbrake_api_key = ui.ask("What's the api key of this project for airbrake?")
-    if !airbrake_api_key.nil? && !airbrake_api_key.empty?
-      deploy_gist.gsub!(/(:airbrake_api_key,\s)(nil)/, '\1' + "\"#{airbrake_api_key}\"")
-      context["airbrake_api_key"] = airbrake_api_key
-    end
     
     File.open(deploy, "w") do |f|
       deploy_gist.each_line do |line|
@@ -93,21 +75,21 @@ def update_deploy_config(ui, base, context, force)
   }.each do |env, gist|
     file = File.join(deploy_dir, "#{env}.rb")
     write = true
-    
+
     if File.exists?(file)
       overwrite = ui.ask("The file #{file} already exists, do you want to override it?  ") { |q| q.default = 'n' }
       if !overwrite.match(/^y/)
         write = false
       end
     end
-    
+
     if write
       gist_body = get_plain_secure(gist).body
       server = ui.ask("On which server is the #{env} environment deployed?")
       if !server.match(/^.*\.kunstmaan\.be$/)
         server = "#{server}.kunstmaan.be"
       end
-      
+
       gist_body.gsub!(/(:domain,\s)(\"\")/, '\1' + "\"#{server}\"")
 
       File.open(file, "w") do |f|
@@ -197,21 +179,23 @@ end
 
 def update_vendors(base)
     vendors = File.join(base, "bin", "vendors")
-    fcontent = ""
-    File.open(vendors, "r") do |f|
-      f.each do |line|
-        fcontent << line
-      end
-    end
-
-    File.open(vendors, "w") do |f|
-      fcontent.each_line do |line|
-        f.print line
-        if line.include? "git clone %s %s"
-          f.print "            system(sprintf('cd %s && git config core.filemode false', escapeshellarg($installDir)));" + "\r\n"
+    if File.directory?(vendors)
+      fcontent = ""
+      File.open(vendors, "r") do |f|
+        f.each do |line|
+          fcontent << line
         end
       end
-    end    
+
+      File.open(vendors, "w") do |f|
+        fcontent.each_line do |line|
+          f.print line
+          if line.include? "git clone %s %s"
+            f.print "            system(sprintf('cd %s && git config core.filemode false', escapeshellarg($installDir)));" + "\r\n"
+          end
+        end
+      end
+    end
 end
 
 force = false
