@@ -55,8 +55,8 @@ namespace :symfony do
   desc "Copy vendors from previous release"
   task :copy_vendors, :except => { :no_release => true } do
     pretty_print "--> Copying vendors from previous release"
-    try_sudo "mkdir #{latest_release}/vendor"
-    try_sudo "sh -c 'if [ -d #{previous_release}/vendor ] ; then cp -a #{previous_release}/vendor/* #{latest_release}/vendor/; fi'"
+    try_sudo "mkdir #{release_path}/vendor"
+    try_sudo "sh -c 'if [ -d #{previous_release}/vendor ] ; then cp -a #{previous_release}/vendor/* #{release_path}/vendor/; fi'"
     puts_ok
   end
 
@@ -111,6 +111,7 @@ end
 # After update_code:
 ## Fix the permissions of the cached_copy so that it's readable for the project user
 after "deploy:update_code" do
+  on_rollback { sudo "rm -rf #{release_path}; true" } # by default capistrano will use the run command, but everything has project user rights in our server setup, so use try_sudo in stead of run.
   sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chown -R #{application}:#{application} #{shared_path}/cached-copy; fi'" if deploy_via == :rsync_with_remote_cache || deploy_via == :remote_cache
 end
 
@@ -118,9 +119,9 @@ end
 ## Create the parameters.ini if it's a symfony project
 ## Fix the permissions of the latest release, so that it's readable for the project user
 before "deploy:finalize_update" do
-  on_rollback { try_sudo "rm -rf #{release_path}; true" } # by default capistrano will use the run command, but everything has project user rights in our server setup, so use try_sudo in stead of run.
+  on_rollback { sudo "rm -rf #{release_path}; true" } # by default capistrano will use the run command, but everything has project user rights in our server setup, so use try_sudo in stead of run.
   sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chmod -R ug+rx #{latest_release}/paramDecode; fi'"
-  sudo "sh -c 'if [ -f #{latest_release}/paramDecode ] ; then cd #{latest_release} && ./paramDecode; fi'" # Symfony specific: will generate the parameters.ini
+  sudo "sh -c 'if [ -f #{release_path}/paramDecode ] ; then cd #{release_path} && ./paramDecode; fi'" # Symfony specific: will generate the parameters.ini
   sudo "chown -R #{application}:#{application} #{latest_release}"
   sudo "setfacl -R -m group:admin:rwx #{latest_release}"
 end
