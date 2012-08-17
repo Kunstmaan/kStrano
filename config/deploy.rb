@@ -34,6 +34,8 @@ set :vendors_mode, "install"
 set :update_vendors, true
 set :dump_assetic_assets, true
 set :interactive_mode, true
+set :use_composer, true
+set :clear_controllers, false # This should be fixed, but couldn't get it working with try_sudo
 
 set :writable_dirs,     ["app/cache", "app/logs"]
 set :webserver_user,    "www-data"
