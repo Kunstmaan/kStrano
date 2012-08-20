@@ -35,7 +35,7 @@ set :update_vendors, true
 set :dump_assetic_assets, true
 set :interactive_mode, true
 set :use_composer, true
-set :clear_controllers, false # This should be fixed, but couldn't get it working with try_sudo
+set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
 
 set :writable_dirs,     ["app/cache", "app/logs"]
 set :webserver_user,    "www-data"
