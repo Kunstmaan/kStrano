@@ -91,11 +91,7 @@ after "symfony:composer:update", "kuma:unfix_ssh_socket"
 after "symfony:composer:install", "kuma:unfix_ssh_socket"
 
 # ask to update the schema
-after "symfony:vendors:install", "symfony:doctrine:schema:update"
-after "symfony:vendors:reinstall", "symfony:doctrine:schema:update"
-after "symfony:vendors:upgrade", "symfony:doctrine:schema:update"
-after "symfony:composer:update", "symfony:doctrine:schema:update"
-after "symfony:composer:install", "symfony:doctrine:schema:update"
+after "symfony:bootstrap:build", "symfony:doctrine:schema:update"
 
 # clear the cache before the warmup
 before "symfony:cache:warmup", "symfony:cache:clear"
