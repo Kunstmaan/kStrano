@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency(%q<capistrano>, [">= 2.12.0"])
   s.add_dependency(%q<capistrano-ext>, [">=1.2.1"])
   s.add_dependency(%q<capistrano_colors>, [">=0.5.5"])
-  s.add_dependency(%q<kcapifony>, [">=2.1.7"])
+  s.add_dependency(%q<capifony>, [">=2.1.13"])
   s.add_dependency(%q<json>, [">= 1.6.6"])
   s.add_dependency(%q<broach>, [">= 0.2.1"])
   s.add_dependency(%q<highline>, [">= 1.6.11"])
