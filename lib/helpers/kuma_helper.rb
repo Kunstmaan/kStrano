@@ -11,11 +11,11 @@ module Kumastrano
   end
   
   def say(text)
-    Capistrano::CLI.ui.say("  * #{text}")
+    Capistrano::CLI.ui.say("--> #{text}")
   end
 
   def ask(question, default='n')
-    agree = Capistrano::CLI.ui.agree("    #{question} ") do |q|
+    agree = Capistrano::CLI.ui.agree("--> #{question} ") do |q|
       q.default = default
     end
 
