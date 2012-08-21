@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="" default="build">
+<project name="" default="build-light">
 
     <target name="build" depends="prepare,decodeParam,vendors,lint,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpunit,phpcb,phpdoc"/>
-
+    <target name="build-light" depends="prepare,decodeParam,vendors,phpunit"/>
     <target name="build-parallel" depends="prepare,decodeParam,vendors,lint,tools-parallel,phpunit,phpcb,phpdoc"/>
 
     <target name="tools-parallel" description="Run tools in parallel">
@@ -112,7 +112,8 @@
     <target name="phpunit" description="Run unit tests with PHPUnit">
         <exec executable="phpunit" failonerror="true">
             <arg value="-c"/>
-            <arg value="${basedir}/app/"/>
+            <arg value="${basedir}" />
+            <arg value="--debug" />
         </exec>
     </target>
 

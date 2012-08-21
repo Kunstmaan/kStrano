@@ -18,7 +18,7 @@ When you deploy this will change the [Capistrano][capistrano] deploy flow a bit.
  * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm], which makes installing ruby super easy!
   * [Tutorial on how to install rvm on ubuntu][rvmtut]
 
-* The project for now has only been tested with [Symfony][symfony] projects, to make it work with [Symfony][symfony] we also need the gem [kCapifony][kcapifony]. We made a forked version of [Capifony][kcapifony] to work with the server setup at Kunstmaan.
+* The project for now has only been tested with [Symfony][symfony] projects, to make it work with [Symfony][symfony] we also need the gem [Capifony][capifony].
 
 # Installing [kStrano][kstrano]
 
@@ -76,7 +76,7 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 [rvm]: http://beginrescueend.com/ "Ruby Version Manager"
 [rvmtut]: http://rubysource.com/installing-ruby-with-rvm-on-ubuntu/ "Ruby Version Manager Ubuntu tutorial"
 [symfony]: http://symfony.com/ "Symfony"
-[capifony]: https://github.com/Kunstmaan/kCapifony "Capifony"
+[capifony]: https://github.com/everzet/capifony "Capifony"
 [kcapifony]: https://github.com/Kunstmaan/kCapifony "kCapifony"
 [kdeploy]: https://github.com/Kunstmaan/kDeploy "kDeploy"
 [kbot]: https://github.com/Kunstmaan/kBot "kBot"
