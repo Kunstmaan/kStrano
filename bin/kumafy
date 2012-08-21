@@ -246,7 +246,7 @@ ui = HighLine.new
 base = ARGV.shift
 context = Hash.new
 
-if force && if File.exists?("Capfile")
+if force && File.exists?("Capfile")
   File.delete("Capfile")
 end
 
