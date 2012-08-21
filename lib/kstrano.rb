@@ -75,6 +75,7 @@ namespace :symfony do
 end
 
 before "symfony:vendors:install", "symfony:copy_vendors" # Symfony2 2.0.x
+before "symfony:composer:install", "symfony:copy_vendors" # Symfony2 2.1
 before "symfony:composer:update", "symfony:copy_vendors" # Symfony2 2.1
 
 # Fix the SSH socket so that it's reachable for the project user, this is needed to pass your local ssh keys to github
