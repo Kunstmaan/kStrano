@@ -246,6 +246,10 @@ ui = HighLine.new
 base = ARGV.shift
 context = Hash.new
 
+if force && if File.exists?("Capfile")
+  File.delete("Capfile")
+end
+
 puts "[start] capifony"
 %x(capifony .)
 puts "[end] capifony"
