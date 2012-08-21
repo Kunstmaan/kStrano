@@ -30,11 +30,17 @@ set :branch, "master"
 # Symfony 2
 set :model_manager, "doctrine"
 set :shared_children, [app_path + "/logs", web_path + "/uploads"]
-set :vendors_mode, "install"
-set :update_vendors, true
+
+# When using Symfony 2.0
+# set :vendors_mode, "install"
+# set :update_vendors, true
+
+# When using Symfony 2.1
+set :use_composer, true
+set :update_vendors, false
+
 set :dump_assetic_assets, true
 set :interactive_mode, true
-set :use_composer, true
 set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
 
 set :writable_dirs,     ["app/cache", "app/logs"]
