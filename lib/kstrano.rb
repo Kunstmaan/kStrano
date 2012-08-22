@@ -44,6 +44,7 @@ namespace :kuma do
 
   desc "Clear the APC cache"
   task :apcclear do
+    serverproject = domain.split('.')[0]
     sudo "sh -c 'curl https://raw.github.com/gist/2868838/ > /home/projects/#{serverproject}/site/apcclear.php'"
   end
 
@@ -138,7 +139,6 @@ end
 
 after "deploy:finalize_update" do
   kuma.fpmreload
-  serverproject = domain.split('.')[0]
   kuma.apcclear
 end
 
