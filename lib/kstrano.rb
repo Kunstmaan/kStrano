@@ -32,6 +32,21 @@ namespace :kuma do
     sudo "chmod 775 -R `dirname $SSH_AUTH_SOCK`"
   end
 
+  desc "Reload PHP5 fpm"
+  task :fpmreload do
+    sudo "/etc/init.d/php5-fpm reload"
+  end
+
+  desc "Restart PHP5 fpm"
+  task :fpmrestart do
+    sudo "/etc/init.d/php5-fpm restart"
+  end
+
+  desc "Clear the APC cache"
+  task :apcclear do
+    sudo "sh -c 'curl https://raw.github.com/gist/2868838/ > /home/projects/#{serverproject}/site/apcclear.php'"
+  end
+
 end
 
 namespace :deploy do
@@ -122,9 +137,9 @@ before "deploy:finalize_update" do
 end
 
 after "deploy:finalize_update" do
-  sudo "/etc/init.d/php5-fpm reload"
+  kuma.fpmreload
   serverproject = domain.split('.')[0]
-  sudo "sh -c 'curl https://raw.github.com/gist/2868838/ > /home/projects/#{serverproject}/site/apcclear.php'"
+  kuma.apcclear
 end
 
 before :deploy do
