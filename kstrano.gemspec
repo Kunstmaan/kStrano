@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'kstrano'
-  s.version     = '0.0.20'
+  s.version     = '0.0.21'
   s.summary     = <<-DESC.strip.gsub(/\n\s+/, " ")
     Deploying applications with Capistrano, Jenkins and GIT.
   DESC
