@@ -61,6 +61,7 @@ set :update_vendors, false
 to 
 
 ```ruby
+set :use_composer, false
 set :vendors_mode, "install"
 set :update_vendors, true
 ``` 
