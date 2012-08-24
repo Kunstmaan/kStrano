@@ -42,7 +42,7 @@ gem install kstrano-<version>.gem
 ```bash
 cd to/your/project/path
 kumafy .
-```	
+``` 
 
 You can also do a force install, which will update all the files:
 
@@ -50,6 +50,22 @@ You can also do a force install, which will update all the files:
 cd to/your/project/path
 kumafy . --force
 ``` 
+
+by default the configuration files are made for Symfony version > 2.1, and they use composer. To make it work with a version without compose change
+
+```ruby
+set :use_composer, true
+set :update_vendors, false
+``` 
+
+to 
+
+```ruby
+set :vendors_mode, "install"
+set :update_vendors, true
+``` 
+
+in your deploy.rb
 
 # Minimal setup
 
@@ -71,6 +87,7 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 # Changelog
 
 * 24/08/2012 (version 0.0.21)
+ * by default it works with Symfony version > 2.1 now, and it uses composer
  * [kCapifony][kcapifony] isn't needed anymore, from now on it works directly with [Capifony][capifony]
  * updated to work with the new version of [Capifony][capifony]
  * removed vendors from the shared folder to the release folder, and copy it with each deploy
