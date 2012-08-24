@@ -32,6 +32,7 @@ set :model_manager, "doctrine"
 set :shared_children, [app_path + "/logs", web_path + "/uploads"]
 
 # When using Symfony 2.0
+# set :use_composer, false
 # set :vendors_mode, "install"
 # set :update_vendors, true
 
