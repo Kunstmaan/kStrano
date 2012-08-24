@@ -1,12 +1,6 @@
 # Introducing [kStrano][kstrano]
 
-[Capistrano][capistrano] is an open source tool for running scripts on multiple servers. It’s primary use is for easily deploying applications. [kStrano][kstrano] (KumaStrano) is a deployment “recipe” to work with Kunstmaan specific applications to make your job a lot easier. It integrates with:
-
-* [Jenkins][jenkins]
-* [Airbrake][airbrake]
-* [Campfire][campfire]
-
-When you deploy this will change the [Capistrano][capistrano] deploy flow a bit. It will check if there is a successful build available on [Jenkins][jenkins] for your current commit hash. If not, it will ask if you want to build it again. At the end it will add a Deploy to [Airbrake][airbrake], so that you see which exceptions occurred after your last deploy. In the mean time it will also say some stuff on the configured [Campfire][campfire] room.
+[Capistrano][capistrano] is an open source tool for running scripts on multiple servers. It’s primary use is for easily deploying applications. [kStrano][kstrano] (KumaStrano) is a deployment “recipe” to work with Kunstmaan specific applications to make your job a lot easier.
 
 # Prerequisites
 
@@ -15,21 +9,32 @@ When you deploy this will change the [Capistrano][capistrano] deploy flow a bit.
  * [kStrano][kstrano] has been tested on:
   * OSX Lion using [Ruby][ruby] (1.8.7, 1.9.2), [RubyGems][rubygems] (1.8.10)
   * Ubuntu using [Ruby][ruby] (1.8.7), [RubyGems][rubygems] ()
- * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm], which makes installing ruby super easy!
+ * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm] or [rbenv][rbenv], which makes installing ruby super easy!
   * [Tutorial on how to install rvm on ubuntu][rvmtut]
 
 * The project for now has only been tested with [Symfony][symfony] projects, to make it work with [Symfony][symfony] we also need the gem [Capifony][capifony].
 
 # Installing [kStrano][kstrano]
 
+Before you install make sure you have no older versions of [kStrano][kstrano], [Capifony][capifony] or [kCapifony][kcapifony]:
+
+```bash
+gem uninstall kcapifony
+gem uninstall capifony
+gem uninstall kstrano
+```
+
+You can install kStrano using rubyGems:
+
 ```bash
 gem install kstrano
 ```
 
-Make sure you have no ther kstrano gems installed
+Or you can download the source and install it manually:
 
 ```bash
-gem uninstall kstrano
+gem build kstrano.gemspec
+gem install kstrano-<version>.gem
 ```
 
 # Configuring your project
@@ -39,7 +44,12 @@ cd to/your/project/path
 kumafy .
 ```	
 
-[kStrano][kstrano] only works with [Symfony][symfony] projects for now, so you need to use capifony command. The configuration files created by kumafy will also be [Symfony][symfony] specific.
+You can also do a force install, which will update all the files:
+
+```bash
+cd to/your/project/path
+kumafy . --force
+``` 
 
 # Minimal setup
 
@@ -48,29 +58,32 @@ kumafy .
 - Commit the changes
 - Run ```cap deploy:setup```
 
-To enable Jenkins on demand building, add the following to deploy.rb
-
-```ruby
-set :jenkins_enabled, true
-```
-
 From now on you should be able to run ```cap:deploy``` to deploy the project...
 
 # Available [kStrano][kstrano] commands
 
-* cap kuma:fixcron, this will run the fixcron command from [kDeploy][kdeploy].
-* cap kuma:fixperms, this will run the fixperms command from [kDeploy][kdeploy].
-* cap airbrake:notify, this registers an airbrake deploy on [Airbrake][airbrake].
-* cap campfire:say, say something as [kBot][kbot] in your room on [Campfire][campfire].
-* cap jenkins:build, try to build your current git commit hash in the branch job on [Jenkins][jenkins].
-* cap jenkins:create_job, try to create a branch job on [Jenkins][jenkins].
+* cap kuma:fixcron, this will run the fixcron command on the server from [kDeploy][kdeploy].
+* cap kuma:fixperms, this will run the fixperms command on the server from [kDeploy][kdeploy].
+* cap kuma:fpmreload, this will reload fpm on the server.
+* cap kuma:fpmrestart, this will restart fpm on the server.
+* cap kuma:apcclear, this will clear the apc cache. 
+
+# Changelog
+
+* 24/08/2012 (version 0.0.21)
+ * [kCapifony][kcapifony] isn't needed anymore, from now on it works directly with [Capifony][capifony]
+ * updated to work with the new version of [Capifony][capifony]
+ * removed vendors from the shared folder to the release folder, and copy it with each deploy
+ * clean up the gem no jenkins, campfire and airbrake support anymore
+ * added extra commands like fpmreload, fpmrestart, apcclear
+ * updated the default config files like: deploy.rb, staging.rb, production.rb, build.xml, etc.
+ * fix to make the forward_agent working
+ * small fixes
 
 [kstrano]: https://github.com/Kunstmaan/kStrano "kStrano"
 [capistrano]: https://github.com/capistrano/capistrano "Capistrano"
-[jenkins]: http://jenkins-ci.org/ "Jenkins"
-[airbrake]: http://airbrakeapp.com/pages/home "Airbrake"
-[campfire]: http://campfirenow.com/ "Campfire"
 [ruby]: http://www.ruby-lang.org/ "Ruby"
+[rbenv]: https://github.com/sstephenson/rbenv "Rbenv"
 [rubygems]: http://rubygems.org/ "RubyGems"
 [capistranoext]: https://github.com/jamis/capistrano-ext "Capistrano Extensions"
 [rvm]: http://beginrescueend.com/ "Ruby Version Manager"
