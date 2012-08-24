@@ -1,7 +1,7 @@
 Upgrade Instructions
 ====================
 
-# Upgrade to version 0.0.21:
+### Upgrade to version 0.0.21:
 
 To upgrade to the new version make sure all the previous installs are removed:
 
