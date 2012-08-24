@@ -42,3 +42,5 @@ to
 set :vendors_mode, "install"
 set :update_vendors, true
 ``` 
+
+in your deploy.rb
