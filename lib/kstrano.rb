@@ -117,8 +117,7 @@ before "symfony:cache:warmup", "symfony:cache:clear"
 # Before update_code:
 ## Make the cached_copy readable for the current user
 before "deploy:update_code" do
-  user = Etc.getlogin
-  sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chown -R #{user}:#{user} #{shared_path}/cached-copy; fi'" if deploy_via == :rsync_with_remote_cache || deploy_via == :remote_cache
+  sudo "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then chown -R $SUDO_USER:$SUDO_USER #{shared_path}/cached-copy; fi'" if deploy_via == :rsync_with_remote_cache || deploy_via == :remote_cache
 end
 
 # After update_code:
