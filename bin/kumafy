@@ -87,8 +87,8 @@ def update_deploy_config(ui, base, context, force)
     if write
       gist_body = get_plain_secure(gist).body
       server = ui.ask("On which server is the #{env} environment deployed?")
-      if !server.match(/^.*\.kunstmaan\.be$/)
-        server = "#{server}.kunstmaan.be"
+      if !server.match(/^.*\.kunstmaan\.be$/) && !server.match(/^.*\.kunstmaan\.com$/) 
+        server = "#{server}.cloud.kunstmaan.com"
       end
 
       gist_body.gsub!(/(:domain,\s)(\"\")/, '\1' + "\"#{server}\"")
