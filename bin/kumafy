@@ -16,6 +16,7 @@ STAGING_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/staging.r
 BUILD_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/build.xml"
 PHPCS_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpcs.xml"
 PHPMD_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpmd.xml"
+PHPDOX_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpdox.xml"
 PHPUNIT_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpunit.xml.dist"
 
 def update_capfile(base, context, force)
@@ -134,6 +135,7 @@ def update_jenkins_config(ui, base, context, force)
   {
     File.join(build_dir, "phpcs.xml") => PHPCS_GIST, 
     File.join(build_dir, "phpmd.xml") => PHPMD_GIST,
+    File.join(build_dir, "phpdox.xml") => PHPDOX_GIST,
     File.join(base, "app", "phpunit.xml.dist") => PHPUNIT_GIST
   }.each do |file, gist|
     write = true
