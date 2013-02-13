@@ -15,7 +15,7 @@ set :deploy_to, "/home/projects/#{application}/data/"
 set (:domain) {"#{domain}"} # domain is defined in the stage config
 
 role(:web) { domain } # Your HTTP server, Apache/etc
-role(:app) { domain } # This may be the same as your `Web` server
+role(:app, :primary => true) { domain } # This may be the same as your `Web` server
 role(:db, :primary => true) { domain } # This is where the migrations will run
 
 # Git
@@ -38,14 +38,7 @@ set :shared_children, [log_path, web_path + "/uploads"]
 set :use_composer, true
 set :update_vendors, false
 
-set :dump_assetic_assets, true
-set :interactive_mode, true
-set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
-
 set :writable_dirs,     ["app/cache", "app/logs"]
-set :webserver_user,    "www-data"
-set :permission_method, :acl
-set :force_schema, false
 
 # Logging
 # - IMPORTANT = 0
