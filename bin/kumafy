@@ -137,7 +137,7 @@ def update_jenkins_config(ui, base, context, force)
     File.join(build_dir, "phpcs.xml") => PHPCS_GIST, 
     File.join(build_dir, "phpmd.xml") => PHPMD_GIST,
     File.join(build_dir, "phpdox.xml") => PHPDOX_GIST,
-    File.join(base, "app", "phpunit.xml.dist") => PHPUNIT_GIST
+    File.join(base, "app", "phpunit.xml.dist") => PHPUNIT_GIST,
     File.join(base, "web", "app_test.php") => APPTEST_GIST
   }.each do |file, gist|
     write = true
