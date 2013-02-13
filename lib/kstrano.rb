@@ -174,6 +174,10 @@ end
 before :deploy do
   Kumastrano.say "executing ssh-add"
   %x(ssh-add)
+  run "#{try_sudo} sh -c 'if [ -d #{shared_path}/cached-copy ] ; then cd #{shared_path}/cached-copy/ && git rev-parse HEAD; fi'" do |ch, stream, data|
+    puts "ok"
+    puts data
+  end
 end
 
 after :deploy do
