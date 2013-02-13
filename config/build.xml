@@ -184,18 +184,16 @@
     </exec>
     </target>
 
-    <!--
     <target name="behat">
         <delete dir="${basedir}/build/behat" />
         <mkdir dir="${basedir}/build/behat"/>
         <exec dir="${basedir}" executable="bin/behat" failonerror="false">
-          <arg line="@NameOfYourBundle"/>
+          <arg line="src"/>
           <arg line="-f"/>
           <arg line="pretty,junit"/>
           <arg line="--out"/>
           <arg line=",build/behat"/>
         </exec>
     </target>
-    -->
 
 </project>
