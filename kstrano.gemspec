@@ -1,11 +1,11 @@
 Gem::Specification.new do |s|
   s.name        = 'kstrano'
-  s.version     = '0.0.29'
+  s.version     = '0.0.30'
   s.summary     = <<-DESC.strip.gsub(/\n\s+/, " ")
-    Deploying applications with Capistrano, Jenkins and GIT.
+    Deploying symfony2 applications for the kDeploy server setup.
   DESC
   s.description = <<-DESC.strip.gsub(/\n\s+/, " ")
-    Deploying applications with Capistrano, Jenkins and GIT.
+    Deploying symfony2 applications for the kDeploy server setup.
   DESC
 
   s.files       = Dir.glob("lib/**/*")
@@ -19,10 +19,8 @@ Gem::Specification.new do |s|
   s.email       = 'support@kunstmaan.be'
   s.homepage    = 'https://github.com/Kunstmaan/kStrano'
 
-  s.add_dependency(%q<capistrano>, ["= 2.14.1"])
+  s.add_dependency(%q<capifony>, ["=2.2.7"])
   s.add_dependency(%q<capistrano-ext>, [">=1.2.1"])
-  s.add_dependency(%q<capistrano_colors>, [">=0.5.5"])
-  s.add_dependency(%q<capifony>, ["=2.1.15"])
   s.add_dependency(%q<json>, [">= 1.6.6"])
   s.add_dependency(%q<broach>, [">= 0.2.1"])
   s.add_dependency(%q<highline>, [">= 1.6.11"])

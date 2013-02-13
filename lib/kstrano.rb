@@ -1,9 +1,12 @@
 # PHP binary to execute
 set :php_bin, "php"
-# Symfony console bin
-set :symfony_console, app_path + "/console"
 
 set :force_schema, false
+
+set :copy_vendors, true
+
+# http://getcomposer.org/doc/03-cli.md
+set :composer_options,      "--no-scripts --verbose --prefer-dist --optimize-autoloader"
 
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
@@ -55,46 +58,31 @@ end
 namespace :deploy do
 
   task :create_symlink, :except => { :no_release => true } do
-      on_rollback do
-        if previous_release
-          try_sudo "ln -sf #{previous_release} #{current_path}; true"
-        else
-          logger.important "no previous release to rollback to, rollback of symlink skipped"
-        end
+    on_rollback do
+      if previous_release
+        try_sudo "ln -sf #{previous_release} #{current_path}; true"
+      else
+        logger.important "no previous release to rollback to, rollback of symlink skipped"
       end
-      try_sudo "ln -sfT #{latest_release} #{current_path}"
     end
-
-end
-
-namespace :symfony do
-
-  desc "Copy vendors from previous release"
-  task :copy_vendors, :except => { :no_release => true } do
-    pretty_print "--> Copying vendors from previous release"
-    try_sudo "mkdir #{release_path}/vendor"
-    try_sudo "sh -c 'if [ -d #{previous_release}/vendor ] ; then cp -a #{previous_release}/vendor/* #{release_path}/vendor/; fi'"
-    puts_ok
+    try_sudo "ln -sfT #{latest_release} #{current_path}"
   end
 
-  namespace :doctrine do
-    namespace :schema do
+  namespace :schema do
 
-      desc "Update the database schema."
-      task :update do
-        if force_schema
-          try_sudo "sh -c 'cd #{latest_release} && #{php_bin} #{symfony_console} doctrine:schema:update --env=#{symfony_env_prod} --force'", :once => true
-        end
+    desc "Deploy and update the schema"
+    task :update, :roles => :app, :except => { :no_release => true }, :only => { :primary => true } do
+      update_code
+      if model_manager == "doctrine"
+        symfony.doctrine.schema.update
       end
-
+      create_symlink
+      restart
     end
+
   end
 
 end
-
-before "symfony:vendors:install", "symfony:copy_vendors" # Symfony2 2.0.x
-before "symfony:composer:install", "symfony:copy_vendors" # Symfony2 2.1
-before "symfony:composer:update", "symfony:copy_vendors" # Symfony2 2.1
 
 # Fix the SSH socket so that it's reachable for the project user, this is needed to pass your local ssh keys to github
 before "symfony:vendors:install", "kuma:fix_ssh_socket"
@@ -108,11 +96,12 @@ after "symfony:vendors:upgrade", "kuma:unfix_ssh_socket"
 after "symfony:composer:update", "kuma:unfix_ssh_socket"
 after "symfony:composer:install", "kuma:unfix_ssh_socket"
 
-# ask to update the schema
-after "symfony:bootstrap:build", "symfony:doctrine:schema:update"
-
 # clear the cache before the warmup
 before "symfony:cache:warmup", "symfony:cache:clear"
+
+after "symfony:composer:copy_vendors" do
+  sudo "chown -R #{application}:#{application} #{latest_release}/vendor"
+end
 
 # Before update_code:
 ## Make the cached_copy readable for the current user

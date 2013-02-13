@@ -1,5 +1,3 @@
-require 'capistrano_colors'
-
 # Main
 set :application, ""
 set :use_sudo, true
@@ -29,7 +27,7 @@ set :branch, "master"
 
 # Symfony 2
 set :model_manager, "doctrine"
-set :shared_children, [app_path + "/logs", web_path + "/uploads"]
+set :shared_children, [log_path, web_path + "/uploads"]
 
 # When using Symfony 2.0
 # set :use_composer, false
