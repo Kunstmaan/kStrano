@@ -1,6 +1,6 @@
 # Introducing [kStrano][kstrano]
 
-[Capistrano][capistrano] is an open source tool for running scripts on multiple servers. It’s primary use is for easily deploying applications. [kStrano][kstrano] (KumaStrano) is a deployment “recipe” to work with Kunstmaan specific applications to make your job a lot easier.
+[Capistrano][capistrano] is an open source tool for running scripts on multiple servers. It’s primary use is for easily deploying applications. [kStrano][kstrano] (KumaStrano) is a deployment “recipe” to work with Kunstmaan specific applications to make your job a lot easier. It is a wrapper arround [Capifony][capifony].
 
 # Prerequisites
 
@@ -16,10 +16,9 @@
 
 # Installing [kStrano][kstrano]
 
-Before you install make sure you have no older versions of [kStrano][kstrano], [Capifony][capifony] or [kCapifony][kcapifony]:
+Before you install make sure you have no older versions of [kStrano][kstrano] or [Capifony][capifony]:
 
 ```bash
-gem uninstall kcapifony
 gem uninstall capifony
 gem uninstall kstrano
 ```
@@ -51,7 +50,7 @@ cd to/your/project/path
 kumafy . --force
 ``` 
 
-by default the configuration files are made for Symfony version > 2.1, and they use composer. To make it work with a version without compose change
+by default the configuration files are made for Symfony version > 2.1, and they use composer. To make it work with a version without composer change
 
 ```ruby
 set :use_composer, true
@@ -70,8 +69,8 @@ in your deploy.rb
 
 # Minimal setup
 
-- Add paramEncode / paramDecode to your github repo
-- Run paramEncode and add app/config/parameters.aes to your github repo
+- Add param to your github repo
+- Run ./param encode and add app/config/parameters.aes to your github repo
 - Commit the changes
 - Run ```cap deploy:setup```
 
@@ -79,13 +78,16 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 
 # Available [kStrano][kstrano] commands
 
-* cap kuma:fixcron, this will run the fixcron command on the server from [kDeploy][kdeploy].
-* cap kuma:fixperms, this will run the fixperms command on the server from [kDeploy][kdeploy].
-* cap kuma:fpmreload, this will reload fpm on the server.
-* cap kuma:fpmrestart, this will restart fpm on the server.
-* cap kuma:apcclear, this will clear the apc cache. 
+* cap kuma:fix:cron, this will run the fixcron command on the server from [kDeploy][kdeploy].
+* cap kuma:fix:perms, this will run the fixperms command on the server from [kDeploy][kdeploy].
+* cap kuma:fpm:reload, this will reload fpm on the server.
+* cap kuma:fpm:restart, this will restart fpm on the server.
+* cap kuma:apc:clear, this will clear the apc cache. 
 
 # Changelog
+
+* 13/02/2013 (version 0.0.30)
+ * updated to work with [Capifony][capifony] 2.2.7
 
 * 24/08/2012 (version 0.0.21)
  * by default it works with Symfony version > 2.1 now, and it uses composer
