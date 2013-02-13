@@ -131,14 +131,16 @@ def update_jenkins_config(ui, base, context, force)
   end
   
   build_dir = File.join(base, "build")
+  web_dir = File.join(base, "web")
   Dir.mkdir(build_dir) unless File.directory?(build_dir)
+  Dir.mkdir(web_dir) unless File.directory?(web_dir)
   
   {
     File.join(build_dir, "phpcs.xml") => PHPCS_GIST, 
     File.join(build_dir, "phpmd.xml") => PHPMD_GIST,
     File.join(build_dir, "phpdox.xml") => PHPDOX_GIST,
     File.join(base, "app", "phpunit.xml.dist") => PHPUNIT_GIST,
-    File.join(base, "web", "app_test.php") => APPTEST_GIST
+    File.join(web_dir, "app_test.php") => APPTEST_GIST
   }.each do |file, gist|
     write = true
     
