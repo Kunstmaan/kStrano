@@ -89,6 +89,7 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 * 13/02/2013 (version 0.0.30)
  * updated to work with [Capifony][capifony] 2.2.7
 
+
 * 24/08/2012 (version 0.0.21)
  * by default it works with Symfony version > 2.1 now, and it uses composer
  * [kCapifony][kcapifony] isn't needed anymore, from now on it works directly with [Capifony][capifony]
