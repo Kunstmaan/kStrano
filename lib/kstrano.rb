@@ -1,9 +1,10 @@
 # PHP binary to execute
 set :php_bin, "php"
 
-set :force_schema, false
-
 set :copy_vendors, true
+
+set :force_schema, false
+set :force_migrations, false
 
 # http://getcomposer.org/doc/03-cli.md
 set :composer_options,      "--no-scripts --verbose --prefer-dist --optimize-autoloader"
@@ -15,42 +16,56 @@ require 'etc'
 
 namespace :kuma do
 
-  desc "Run fixcron for the current project"
-  task :fixcron do
-    sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixcron.py ] ; then cd /opt/kDeploy/tools/; python fixcron.py #{application}; fi'"
+  namespace :ssh_socket do
+
+    task :fix do
+      sudo "chmod 777 -R `dirname $SSH_AUTH_SOCK`"
+    end
+
+    task :unfix do
+      sudo "chmod 775 -R `dirname $SSH_AUTH_SOCK`"
+    end
+
   end
 
-  desc "Run fixperms for the current project"
-  task :fixperms do
-    sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixperms.py ] ; then cd /opt/kDeploy/tools/; python fixperms.py #{application}; fi'"
+  namespace :fix do
+
+    desc "Run fixcron for the current project"
+    task :cron do
+      sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixcron.py ] ; then cd /opt/kDeploy/tools/; python fixcron.py #{application}; fi'"
+    end
+
+    desc "Run fixperms for the current project"
+    task :perms do
+      sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixperms.py ] ; then cd /opt/kDeploy/tools/; python fixperms.py #{application}; fi'"
+    end
+
   end
 
-  desc "Make the SSH Authentication socket reachable for project user"
-  task :fix_ssh_socket do
-    sudo "chmod 777 -R `dirname $SSH_AUTH_SOCK`"
+  namespace :fpm do
+
+    desc "Reload PHP5 fpm"
+    task :reload do
+      sudo "/etc/init.d/php5-fpm reload"
+    end
+
+    desc "Restart PHP5 fpm"
+    task :restart do
+      sudo "/etc/init.d/php5-fpm restart"
+    end
+
   end
 
-  desc "Make the SSH Authentication socket reachable for project user"
-  task :unfix_ssh_socket do
-    sudo "chmod 775 -R `dirname $SSH_AUTH_SOCK`"
-  end
+  namespace :apc do
 
-  desc "Reload PHP5 fpm"
-  task :fpmreload do
-    sudo "/etc/init.d/php5-fpm reload"
-  end
+    desc "Clear the APC cache"
+    task :clear do
+      serverproject = domain.split('.')[0]
+      sudo "sh -c 'curl https://raw.github.com/gist/3987685/ > /home/projects/#{serverproject}/site/apcclear.php'"
+      sudo "chmod 777 /home/projects/#{serverproject}/site/apcclear.php"
+      sudo "curl http://#{domain}/apcclear.php"
+    end
 
-  desc "Restart PHP5 fpm"
-  task :fpmrestart do
-    sudo "/etc/init.d/php5-fpm restart"
-  end
-
-  desc "Clear the APC cache"
-  task :apcclear do
-    serverproject = domain.split('.')[0]
-    sudo "sh -c 'curl https://raw.github.com/gist/3987685/ > /home/projects/#{serverproject}/site/apcclear.php'"
-    sudo "chmod 777 /home/projects/#{serverproject}/site/apcclear.php"
-    sudo "curl http://#{domain}/apcclear.php"
   end
 
 end
@@ -68,37 +83,55 @@ namespace :deploy do
     try_sudo "ln -sfT #{latest_release} #{current_path}"
   end
 
+  desc "Deploy and run pending migrations"
+  task :migrations, :roles => :app, :except => { :no_release => true }, :only => { :primary => true } do
+    set :force_migrations, true
+    deploy.update
+    deploy.restart
+  end
+
   namespace :schema do
 
     desc "Deploy and update the schema"
     task :update, :roles => :app, :except => { :no_release => true }, :only => { :primary => true } do
-      update_code
-      if model_manager == "doctrine"
-        symfony.doctrine.schema.update
-      end
-      create_symlink
-      restart
+      set :force_schema, true
+      deploy.update
+      deploy.restart
     end
 
   end
 
 end
 
+# make it possible to run schema:update and migrations:migrate at the right place in the flow
+after "symfony:bootstrap:build" do
+  if model_manager == "doctrine"
+    if force_schema
+      symfony.doctrine.schema.update
+    end
+
+    if force_migrations
+      symfony.doctrine.migrations.migrate
+    end
+  end
+end
+
 # Fix the SSH socket so that it's reachable for the project user, this is needed to pass your local ssh keys to github
-before "symfony:vendors:install", "kuma:fix_ssh_socket"
-before "symfony:vendors:reinstall", "kuma:fix_ssh_socket"
-before "symfony:vendors:upgrade", "kuma:fix_ssh_socket"
-before "symfony:composer:update", "kuma:fix_ssh_socket"
-before "symfony:composer:install", "kuma:fix_ssh_socket"
-after "symfony:vendors:install", "kuma:unfix_ssh_socket"
-after "symfony:vendors:reinstall", "kuma:unfix_ssh_socket"
-after "symfony:vendors:upgrade", "kuma:unfix_ssh_socket"
-after "symfony:composer:update", "kuma:unfix_ssh_socket"
-after "symfony:composer:install", "kuma:unfix_ssh_socket"
+before "symfony:vendors:install", "kuma:ssh_socket:fix"
+before "symfony:vendors:reinstall", "kuma:ssh_socket:fix"
+before "symfony:vendors:upgrade", "kuma:ssh_socket:fix"
+before "symfony:composer:update", "kuma:ssh_socket:fix"
+before "symfony:composer:install", "kuma:ssh_socket:fix"
+after "symfony:vendors:install", "kuma:ssh_socket:unfix"
+after "symfony:vendors:reinstall", "kuma:ssh_socket:unfix"
+after "symfony:vendors:upgrade", "kuma:ssh_socket:unfix"
+after "symfony:composer:update", "kuma:ssh_socket:unfix"
+after "symfony:composer:install", "kuma:ssh_socket:unfix"
 
 # clear the cache before the warmup
 before "symfony:cache:warmup", "symfony:cache:clear"
 
+# set the right permissions on the vendor folder ... 
 after "symfony:composer:copy_vendors" do
   sudo "chown -R #{application}:#{application} #{latest_release}/vendor"
 end
@@ -127,8 +160,8 @@ before "deploy:finalize_update" do
 end
 
 after "deploy:finalize_update" do
-  kuma.fpmreload
-  kuma.apcclear
+  kuma.fpm.reload
+  kuma.apc.clear
 end
 
 before :deploy do
@@ -136,10 +169,7 @@ before :deploy do
   %x(ssh-add)
 end
 
-# After deploy:
-## Notify the people on campfire of this deploy
-## Notify airbrake to add a new deploy to the deploy history
 after :deploy do
-  kuma::fixcron
+  kuma.fix.cron
   deploy::cleanup ## cleanup old releases
 end
