@@ -174,9 +174,10 @@ end
 before :deploy do
   Kumastrano.say "executing ssh-add"
   %x(ssh-add)
+  ## run "cat #{current_path}/REVISION" do |ch, stream, data|
   run "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then cd #{shared_path}/cached-copy/ && git rev-parse HEAD; fi'" do |ch, stream, data|
     serverHash = data.strip
-    myHash = Kumastrano::GitHelper.commit_hash
+    myHash = Kumastrano::GitHelper.commit_hash "origin/#{branch}"
 
     Kumastrano.say "Commits that will be deployed on the #{domain} server (#{serverHash} ~ #{myHash})"
     output = `git log #{serverHash}..#{myHash}`
