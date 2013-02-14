@@ -20,6 +20,8 @@ require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 require 'rexml/document'
 require 'etc'
+require 'new_relic/recipes'
+require 'new_relic/agent'
 
 namespace :kuma do
 
@@ -191,5 +193,12 @@ end
 
 after :deploy do
   kuma.fix.cron
+ 
+  if env == "production" && !newrelic_appname.nil? && !newrelic_appname.empty? && !newrelic_license_key.nil? && !newrelic_appname.empty?
+    ::NewRelic::Agent.config.apply_config({:license_key => newrelic_license_key}, 1)
+    set :newrelic_rails_env, env
+    newrelic.notice_deployment
+  end
+
   deploy::cleanup ## cleanup old releases
 end
