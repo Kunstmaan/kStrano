@@ -91,6 +91,46 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 * cap deploy:clean, this will deploy without copying the vendors
 * cap deploy:prefer_source, this will deploy without copying the vendors and using composer option --prefer-source
 
+# Placing the site in Maintenance mode
+To place the site in maintenance mode, we first need to edit the htaccess file to redirect users to the maintenance page.
+Place the following snippet in your htaccess file.
+
+```bash
+ErrorDocument 503 /web/maintenance.html
+RewriteBase /
+RewriteCond %{REQUEST_URI} !\.(css|gif|jpg|png)$
+RewriteCond %{DOCUMENT_ROOT} /web/maintenance.html -f
+RewriteCond %{SCRIPT_FILENAME} !maintenance.html
+RewriteCond %{REMOTE_ADDR} !^#Place the allowed ip addresses here
+RewriteRule ^.*$  -  [redirect=503,last]
+```
+
+This will present the maintenance page to the user if the maintenance.html file is present and the user's IP is not allowed.
+To place the site in maintenance mode, issue the next command. 
+This command will create a maintenance.html file in your data/releases/*/web directory
+
+```bash
+cap deploy:web:disable
+```
+
+In order to place the site out of maintenance mode, issue the next command. This command will remove the created 
+maintenance.html file that was created by the previous command.
+
+```bash
+cap deploy:web:enable
+```
+
+##Customizing the maintenance.html
+The standard maintenance.html page just states that the site is in maintenance and will be back shortly. 
+In order to have a custom maintenance page, you need to set the maintenance_template_path in your deploy.rb.
+
+```bash
+set :maintenance_template_path, "location of your custom template"
+```
+
+Now you will see your own custom maintenance page. Note that the deploy:web:disable command copies the content from the template to the maintenance.html file. 
+So you can not use relative paths in your custom template if you want to show images, custom css etc.
+
 # Changelog
 
 * 13/02/2013 (version 0.0.30)
