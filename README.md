@@ -84,10 +84,12 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 * cap kuma:fpm:restart, this will restart fpm on the server.
 * cap kuma:apc:clear, this will clear the apc cache. 
 
-# Extra commands which are available through the [kStrano][kstrano] gem:
+# Extra deploy commands which are available through the [kStrano][kstrano] gem:
 
 * cap deploy:migrations, this will deploy and execute the pending migrations
 * cap deploy:schema:update, this will deploy and update the schema
+* cap deploy:clean, this will deploy without copying the vendors
+* cap deploy:prefer_source, this will deploy without copying the vendors and using composer option --prefer-source
 
 # Changelog
 
