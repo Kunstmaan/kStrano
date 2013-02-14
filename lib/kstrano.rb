@@ -8,6 +8,7 @@ set :force_migrations, false
 
 set :webserver_user,    "www-data"
 set :permission_method, :acl
+set :server_name, nil
 
 set :dump_assetic_assets, true
 set :interactive_mode, true
