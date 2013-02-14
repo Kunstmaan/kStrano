@@ -61,6 +61,18 @@ def update_deploy_config(ui, base, context, force)
     app_name = context["app_name"]
     deploy_gist.gsub!(/(:application,\s)(\"\")/, '\1' + "\"#{app_name}\"")
     deploy_gist.gsub!(/(:admin_runner,\s)(\"\")/, '\1' + "\"#{app_name}\"")
+
+    newrelic_appname = ui.ask("What's the name of the application in new relic?")
+    if !newrelic_appname.nil? && !newrelic_appname.empty?
+      deploy_gist.gsub!(/(:newrelic_appname,\s)(\"\")/, '\1' + "\"#{newrelic_appname}\"")
+      context["newrelic_appname"] = newrelic_appname
+    end
+
+    newrelic_license_key = ui.ask("What's the license key of your newrelic account (can be found under 'Account settings')?")
+    if !newrelic_license_key.nil? && !newrelic_license_key.empty?
+      deploy_gist.gsub!(/(:newrelic_license_key,\s)(\"\")/, '\1' + "\"#{newrelic_license_key}\"")
+      context["newrelic_license_key"] = newrelic_license_key
+    end
     
     File.open(deploy, "w") do |f|
       deploy_gist.each_line do |line|
