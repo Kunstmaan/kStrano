@@ -189,18 +189,21 @@ end
 before :deploy do
   Kumastrano.say "executing ssh-add"
   %x(ssh-add)
-  ## run "cat #{current_path}/REVISION" do |ch, stream, data|
-  run "sh -c 'if [ -d #{shared_path}/cached-copy ] ; then cd #{shared_path}/cached-copy/ && git rev-parse HEAD; fi'" do |ch, stream, data|
-    serverHash = data.strip
-    myHash = Kumastrano::GitHelper.commit_hash "origin/#{branch}"
 
-    Kumastrano.say "Commits that will be deployed on the #{domain} server (#{serverHash} ~ #{myHash})"
-    output = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit #{serverHash}..#{myHash}`
-    Kumastrano.say output
+  Kumastrano::GitHelper.fetch
+  from_revision = source.next_revision(current_revision)
+  if scm == :git
+    log_command = "git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{previous_revision}..#{real_revision}"
+  else
+    log_command = "#{source.log(from_revision)}"
+  end
+  changelog = `#{log_command}`
 
-    if !Kumastrano.ask "Are you sure you want to continue deploying?"
-      exit
-    end
+  Kumastrano.say "Changelog of what will be deployed to #{domain}"
+  Kumastrano.say changelog, ''
+
+  if !Kumastrano.ask "Are you sure you want to continue deploying?", "y"
+    exit
   end
 end
 

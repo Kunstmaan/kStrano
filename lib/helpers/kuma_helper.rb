@@ -10,8 +10,8 @@ module Kumastrano
     raise msg
   end
   
-  def say(text)
-    Capistrano::CLI.ui.say("--> #{text}")
+  def say(text, prefix='--> ')
+    Capistrano::CLI.ui.say("#{prefix}#{text}")
   end
 
   def ask(question, default='n')
