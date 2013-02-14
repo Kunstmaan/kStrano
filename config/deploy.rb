@@ -40,6 +40,9 @@ set :update_vendors, false
 
 set :writable_dirs,     ["app/cache", "app/logs"]
 
+set :newrelic_appname, "" # The name of the application in newrelic
+set :newrelic_license_key, "" # The license key can be found under 'Account settings'
+
 # Logging
 # - IMPORTANT = 0
 # - INFO      = 1

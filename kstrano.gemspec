@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'kstrano'
-  s.version     = '0.0.32'
+  s.version     = '0.0.33'
   s.summary     = <<-DESC.strip.gsub(/\n\s+/, " ")
     Deploying symfony2 applications for the kDeploy server setup.
   DESC
@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
   s.add_dependency(%q<capistrano-ext>, [">=1.2.1"])
   s.add_dependency(%q<json>, [">= 1.6.6"])
   s.add_dependency(%q<broach>, [">= 0.2.1"])
-  s.add_dependency(%q<highline>, [">= 1.6.11"])
+  s.add_dependency(%q<newrelic_rpm>, [">= 3.5.5.38"])
 end
