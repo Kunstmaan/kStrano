@@ -180,7 +180,7 @@ before :deploy do
     myHash = Kumastrano::GitHelper.commit_hash "origin/#{branch}"
 
     Kumastrano.say "Commits that will be deployed on the #{domain} server (#{serverHash} ~ #{myHash})"
-    output = `git log #{serverHash}..#{myHash}`
+    output = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit #{serverHash}..#{myHash}`
     Kumastrano.say output
 
     if !Kumastrano.ask "Are you sure you want to continue deploying?"
