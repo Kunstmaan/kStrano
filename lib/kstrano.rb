@@ -82,9 +82,11 @@ namespace :kuma do
 
     desc "Clear the APC cache"
     task :clear do
-      serverproject = domain.split('.')[0]
-      sudo "sh -c 'curl https://raw.github.com/gist/3987685/ > /home/projects/#{serverproject}/site/apcclear.php'"
-      sudo "chmod 777 /home/projects/#{serverproject}/site/apcclear.php"
+      if server_name.nil? || server_name.empty?
+        server_name = domain.split('.')[0]
+      end
+      sudo "sh -c 'curl https://raw.github.com/gist/3987685/ > /home/projects/#{server_name}/site/apcclear.php'"
+      sudo "chmod 777 /home/projects/#{server_name}/site/apcclear.php"
       sudo "curl http://#{domain}/apcclear.php"
     end
 
