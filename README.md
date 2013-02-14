@@ -83,6 +83,7 @@ From now on you should be able to run ```cap:deploy``` to deploy the project...
 * cap kuma:fpm:reload, this will reload fpm on the server.
 * cap kuma:fpm:restart, this will restart fpm on the server.
 * cap kuma:apc:clear, this will clear the apc cache. 
+* cap kuma:changelog, this will show the log of what changed compared to the deployed version
 
 # Extra deploy commands which are available through the [kStrano][kstrano] gem:
 

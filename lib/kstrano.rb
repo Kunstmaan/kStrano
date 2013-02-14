@@ -37,6 +37,19 @@ namespace :kuma do
 
   end
 
+  desc "Show log of what changed compared to the deployed version"
+  task :changelog do
+    Kumastrano::GitHelper.fetch
+    changelog = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{current_revision}..#{real_revision}`
+
+    if current_revision == real_revision && changelog.strip.empty?
+      changelog = "No changes found!"
+    end
+
+    Kumastrano.say "Changelog of what will be deployed to #{domain}"
+    Kumastrano.say changelog, ''
+  end
+
   namespace :fix do
 
     desc "Run fixcron for the current project"
@@ -190,18 +203,7 @@ before :deploy do
   Kumastrano.say "executing ssh-add"
   %x(ssh-add)
 
-  Kumastrano::GitHelper.fetch
-  from_revision = source.next_revision(current_revision)
-  if scm == :git
-    log_command = "git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{previous_revision}..#{real_revision}"
-  else
-    log_command = "#{source.log(from_revision)}"
-  end
-  changelog = `#{log_command}`
-
-  Kumastrano.say "Changelog of what will be deployed to #{domain}"
-  Kumastrano.say changelog, ''
-
+  kuma.changelog
   if !Kumastrano.ask "Are you sure you want to continue deploying?", "y"
     exit
   end
