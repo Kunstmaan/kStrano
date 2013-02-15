@@ -19,6 +19,7 @@ PHPMD_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpmd.xml"
 PHPDOX_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpdox.xml"
 PHPUNIT_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpunit.xml.dist"
 APPTEST_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/app_test.php"
+BEHAT_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/behat.yml-dist"
 
 def update_capfile(base, context, force)
   file = File.join(base, "Capfile")
@@ -152,7 +153,8 @@ def update_jenkins_config(ui, base, context, force)
     File.join(build_dir, "phpmd.xml") => PHPMD_GIST,
     File.join(build_dir, "phpdox.xml") => PHPDOX_GIST,
     File.join(base, "app", "phpunit.xml.dist") => PHPUNIT_GIST,
-    File.join(web_dir, "app_test.php") => APPTEST_GIST
+    File.join(web_dir, "app_test.php") => APPTEST_GIST,
+    File.join(base, "behat.yml-dist") => BEHAT_GIST
   }.each do |file, gist|
     write = true
     
