@@ -102,7 +102,7 @@ RewriteBase /
 RewriteCond %{REQUEST_URI} !\.(css|gif|jpg|png)$
 RewriteCond %{DOCUMENT_ROOT} /web/maintenance.html -f
 RewriteCond %{SCRIPT_FILENAME} !maintenance.html
-RewriteCond %{REMOTE_ADDR} !^#Place the allowed ip addresses here
+RewriteCond %{REMOTE_ADDR} !^#Place the allowed ip addresses here (e.g. 127\.0\.0\.1)
 RewriteRule ^.*$  -  [redirect=503,last]
 ```
 
