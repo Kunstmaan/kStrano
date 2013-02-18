@@ -51,13 +51,6 @@ namespace :kuma do
 
   end
 
-  desc "sync the database and rsync the files"
-  task :sync do
-    files.move.to_local
-    Kumastrano.say "Copying database"
-    database.move.to_local
-  end
-
   desc "Show log of what changed compared to the deployed version"
   task :changelog do
     Kumastrano::GitHelper.fetch
@@ -69,6 +62,18 @@ namespace :kuma do
 
     Kumastrano.say "Changelog of what will be deployed to #{domain}"
     Kumastrano.say changelog, ''
+  end
+
+
+  namespace :sync do
+
+    desc "sync the database and rsync the files"
+    task :to_local do
+      files.move.to_local
+      Kumastrano.say "Copying database"
+      database.move.to_local
+    end
+
   end
 
   namespace :fix do
