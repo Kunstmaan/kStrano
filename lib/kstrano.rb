@@ -11,7 +11,7 @@ set :permission_method, :acl
 set :server_name, nil
 
 set :dump_assetic_assets, true
-set :interactive_mode, true
+set :interactive_mode, false
 set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
 
 # http://getcomposer.org/doc/03-cli.md
