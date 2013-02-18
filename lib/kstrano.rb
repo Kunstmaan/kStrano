@@ -24,6 +24,19 @@ require 'etc'
 require 'new_relic/recipes'
 require 'new_relic/agent'
 
+namespace :files do
+  namespace :move do
+
+    desc "Rsync uploaded files from online to local"
+    task :to_local do
+      Kumastrano.say "Copying files"
+      log = `rsync -qazhL --progress --del --rsh=/usr/bin/ssh -e "ssh -p #{port}" --exclude "*bak" --exclude "*~" --exclude ".*" #{domain}:#{current_path}/web/uploads/* web/uploads/`
+      Kumastrano.say log
+    end
+
+  end    
+end
+
 namespace :kuma do
 
   namespace :ssh_socket do
@@ -36,6 +49,13 @@ namespace :kuma do
       sudo "chmod 775 -R `dirname $SSH_AUTH_SOCK`"
     end
 
+  end
+
+  desc "sync the database and rsync the files"
+  task :sync do
+    files.move.to_local
+    Kumastrano.say "Copying database"
+    database.move.to_local
   end
 
   desc "Show log of what changed compared to the deployed version"
