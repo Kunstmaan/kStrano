@@ -140,17 +140,21 @@ namespace :deploy do
     deploy.restart
   end
 
-  desc "Deploy without copying the vendors from a previous install and use composer option --prefer-source"
-  task :prefer_source, :roles => :app, :except => { :no_release => true } do
-    set :composer_options, "--no-scripts --verbose --prefer-source --optimize-autoloader"
-    deploy.clean
-  end
-
   desc "Deploy without copying the vendors from a previous install"
   task :clean, :roles => :app, :except => { :no_release => true } do
     set :copy_vendors, false
     deploy.update
     deploy.restart
+  end
+
+  namespace :prefer do
+
+    desc "Deploy without copying the vendors from a previous install and use composer option --prefer-source"
+    task :source, :roles => :app, :except => { :no_release => true } do
+      set :composer_options, "--no-scripts --verbose --prefer-source --optimize-autoloader"
+      deploy.clean
+    end
+
   end
 
   namespace :schema do
