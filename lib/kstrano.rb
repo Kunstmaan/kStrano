@@ -53,15 +53,17 @@ namespace :kuma do
 
   desc "Show log of what changed compared to the deployed version"
   task :changelog do
-    Kumastrano::GitHelper.fetch
-    changelog = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{current_revision}..#{real_revision}`
+    if releases.length > 0
+      Kumastrano::GitHelper.fetch
+      changelog = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{current_revision}..#{real_revision}`
 
-    if current_revision == real_revision && changelog.strip.empty?
-      changelog = "No changes found!"
+      if current_revision == real_revision && changelog.strip.empty?
+        changelog = "No changes found!"
+      end
+
+      Kumastrano.say "Changelog of what will be deployed to #{domain}"
+      Kumastrano.say changelog, ''
     end
-
-    Kumastrano.say "Changelog of what will be deployed to #{domain}"
-    Kumastrano.say changelog, ''
   end
 
 
