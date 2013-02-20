@@ -100,13 +100,13 @@ To place the site in maintenance mode, we first need to edit the htaccess file t
 Place the following snippet in your htaccess file.
 
 ```bash
-ErrorDocument 503 /web/maintenance.html
+ErrorDocument 503 /maintenance.html
 RewriteBase /
-RewriteCond %{REQUEST_URI} !\.(css|gif|jpg|png)$
-RewriteCond %{DOCUMENT_ROOT} /web/maintenance.html -f
-RewriteCond %{SCRIPT_FILENAME} !maintenance.html
+RewriteCond %{REQUEST_URI} !\.(css|gif|jpg|png|js)$
+RewriteCond %{DOCUMENT_ROOT}/maintenance.html -f
+RewriteCond %{ENV:REDIRECT_STATUS} !=503
 RewriteCond %{REMOTE_ADDR} !^#Place the allowed ip addresses here (e.g. 127\.0\.0\.1)
-RewriteRule ^.*$  -  [redirect=503,last]
+RewriteRule ^.*$ - [R=503,L]
 ```
 
 This will present the maintenance page to the user if the maintenance.html file is present and the user's IP is not allowed.
