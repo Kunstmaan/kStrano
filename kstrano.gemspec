@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'kstrano'
-  s.version     = '0.0.39'
+  s.version     = '1.0.0'
   s.summary     = <<-DESC.strip.gsub(/\n\s+/, " ")
     Deploying symfony2 applications for the kDeploy server setup.
   DESC

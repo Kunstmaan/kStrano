@@ -233,6 +233,14 @@ after "deploy:finalize_update" do
   kuma.apc.clear
 end
 
+# Ensure a stage is specificaly selected
+on :start do
+  if !stages.include?(ARGV.first)
+    Capistrano::CLI.ui.say("You need to select one of the stages first (cap <#{stages.join('|')}> #{ARGV.first})")
+    exit
+  end
+end
+
 before :deploy do
   Kumastrano.say "executing ssh-add"
   %x(ssh-add)
