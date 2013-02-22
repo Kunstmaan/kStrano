@@ -2,6 +2,9 @@
 
 <project name="" default="build">
 
+    <!-- depends on ant-contrib -->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
     <target name="sync" description="Sync files and database from online">
         <exec executable="${basedir}/sync" failonerror="true" />
     </target>
@@ -189,14 +192,24 @@
     </target>
 
     <target name="behat">
+        <foreach target="behat_inner" param="bundle_path" inheritall="true">
+            <path>
+                <dirset dir="${basedir}">
+                    <include name="src/Kunstmaan/Bundle/*"/>
+                </dirset>
+            </path>
+        </foreach>
+    </target>
+
+    <target name="behat_inner">
         <delete dir="${basedir}/build/behat" />
         <mkdir dir="${basedir}/build/behat"/>
         <exec dir="${basedir}" executable="bin/behat" failonerror="false">
-          <arg line="src"/>
-          <arg line="-f"/>
-          <arg line="pretty,junit"/>
-          <arg line="--out"/>
-          <arg line=",build/behat"/>
+            <arg line="${bundle_path}"/>
+            <arg line="-f"/>
+            <arg line="pretty,junit"/>
+            <arg line="--out"/>
+            <arg line=",build/behat"/>
         </exec>
     </target>
 
