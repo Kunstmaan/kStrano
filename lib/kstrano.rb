@@ -113,7 +113,7 @@ namespace :kuma do
       if server_name.nil? || server_name.empty?
         server_name = domain.split('.')[0]
       end
-      sudo "sh -c 'curl https://gist.github.com/wimvds/3987685/raw > /home/projects/#{server_name}/site/apcclear.php'"
+      sudo "sh -c 'curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_name}/site/apcclear.php'"
       sudo "chmod 777 /home/projects/#{server_name}/site/apcclear.php"
       sudo "curl http://#{domain}/apcclear.php"
     end
