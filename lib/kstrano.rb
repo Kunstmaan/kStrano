@@ -202,7 +202,7 @@ before "symfony:cache:warmup", "symfony:cache:clear"
 
 # set the right permissions on the vendor folder ... 
 after "symfony:composer:copy_vendors" do
-  sudo "if [ -d #{latest_release}/vendor ] chown -R #{application}:#{application} #{latest_release}/vendor; fi"
+  sudo "sh -c 'if [ -d #{latest_release}/vendor ] ; then chown -R #{application}:#{application} #{latest_release}/vendor; fi'"
 end
 
 # Before update_code:
