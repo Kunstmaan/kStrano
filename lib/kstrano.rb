@@ -219,11 +219,9 @@ after "deploy:update_code" do
 end
 
 # Before finalize_update:
-## Create the parameters.ini if it's a symfony project
 ## Fix the permissions of the latest release, so that it's readable for the project user
 before "deploy:finalize_update" do
   on_rollback { sudo "rm -rf #{release_path}; true" } # by default capistrano will use the run command, but everything has project user rights in our server setup, so use try_sudo in stead of run.
-  sudo "sh -c 'if [ -f #{release_path}/paramDecode ] ; then chmod -R ug+rx #{latest_release}/paramDecode && cd #{release_path} && ./paramDecode; elif [ -f #{release_path}/param ] ; then chmod -R ug+rx #{latest_release}/param && cd #{release_path} && ./param decode; fi'" # Symfony specific: will generate the parameters.ini
   sudo "chown -R #{application}:#{application} #{latest_release}"
   sudo "setfacl -R -m group:admin:rwx #{latest_release}"
 end
