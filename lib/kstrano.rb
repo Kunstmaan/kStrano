@@ -37,6 +37,16 @@ namespace :files do
   end    
 end
 
+namespace :database do
+  namespace :move do
+    desc "DISABLED"
+    task :to_remote, :roles => :db, :only => { :primary => true } do
+      Kumastrano.say "This feature is DISABLED!"
+      exit
+    end
+  end
+end
+
 namespace :kuma do
 
   namespace :ssh_socket do
