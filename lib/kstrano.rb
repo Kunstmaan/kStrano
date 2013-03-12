@@ -14,9 +14,6 @@ set :dump_assetic_assets, true
 set :interactive_mode, false
 set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
 
-# http://getcomposer.org/doc/03-cli.md
-set :composer_options,      "--no-scripts --verbose --prefer-dist --optimize-autoloader"
-
 require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
 require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 require 'rexml/document'
