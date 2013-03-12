@@ -118,13 +118,17 @@ namespace :kuma do
 
   namespace :apc do
 
-    desc "Clear the APC cache"
-    task :clear do
+    desc "Prepare for APC cache clear"
+    task :prepare_clear do
       if server_name.nil? || server_name.empty?
         server_name = domain.split('.')[0]
       end
       sudo "sh -c 'curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_name}/site/apcclear.php'"
       sudo "chmod 777 /home/projects/#{server_name}/site/apcclear.php"
+    end
+    
+    desc "Clear the APC cache"
+    task :clear do
       sudo "curl http://#{domain}/apcclear.php"
     end
 
@@ -234,8 +238,11 @@ before "deploy:finalize_update" do
   sudo "setfacl -R -m group:admin:rwx #{latest_release}"
 end
 
+before "deploy:finalize_update" do
+  kuma.apc.prepare_clear
+end
+
 after "deploy:finalize_update" do
-  kuma.fpm.reload
   kuma.apc.clear
 end
 
