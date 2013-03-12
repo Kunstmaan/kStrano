@@ -207,9 +207,6 @@ after "symfony:vendors:upgrade", "kuma:ssh_socket:unfix"
 after "symfony:composer:update", "kuma:ssh_socket:unfix"
 after "symfony:composer:install", "kuma:ssh_socket:unfix"
 
-# clear the cache before the warmup
-before "symfony:cache:warmup", "symfony:cache:clear"
-
 # set the right permissions on the vendor folder ... 
 after "symfony:composer:copy_vendors" do
   sudo "sh -c 'if [ -d #{latest_release}/vendor ] ; then chown -R #{application}:#{application} #{latest_release}/vendor; fi'"
