@@ -235,13 +235,9 @@ before "deploy:finalize_update" do
   sudo "setfacl -R -m group:admin:rwx #{latest_release}"
 end
 
-before "deploy:finalize_update" do
-  kuma.apc.prepare_clear
-end
-
-after "deploy:finalize_update" do
-  kuma.apc.clear
-end
+before "deploy:finalize_update", "kuma.apc.prepare_clear"
+after "deploy:finalize_update", "kuma.apc.clear"
+after "deploy:create_symlink", "kuma.apc.clear"
 
 before "deploy:update" do
   Kumastrano.say "executing ssh-add"
