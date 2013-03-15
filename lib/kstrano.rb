@@ -202,11 +202,13 @@ before "symfony:vendors:reinstall", "kuma:ssh_socket:fix"
 before "symfony:vendors:upgrade", "kuma:ssh_socket:fix"
 before "symfony:composer:update", "kuma:ssh_socket:fix"
 before "symfony:composer:install", "kuma:ssh_socket:fix"
+before "symfony:composer:dump_autoload", "kuma:ssh_socket:fix" # The cache folder of composer was the one from the ssh user ... while it should be the one of sudo ... 
 after "symfony:vendors:install", "kuma:ssh_socket:unfix"
 after "symfony:vendors:reinstall", "kuma:ssh_socket:unfix"
 after "symfony:vendors:upgrade", "kuma:ssh_socket:unfix"
 after "symfony:composer:update", "kuma:ssh_socket:unfix"
 after "symfony:composer:install", "kuma:ssh_socket:unfix"
+after "symfony:composer:dump_autoload", "kuma:ssh_socket:unfix"
 
 # set the right permissions on the vendor folder ... 
 after "symfony:composer:copy_vendors" do
