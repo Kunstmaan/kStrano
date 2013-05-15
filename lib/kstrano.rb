@@ -117,17 +117,25 @@ namespace :kuma do
 
     desc "Prepare for APC cache clear"
     task :prepare_clear do
-      if server_name.nil? || server_name.empty?
-        server_name = domain.split('.')[0]
+      server_project_name = "#{server_name}"
+      if server_project_name.nil? || server_project_name.empty?
+        server_project_name = domain.split('.')[0]
       end
-      sudo "sh -c 'curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_name}/site/apcclear.php'"
-      sudo "chmod 777 /home/projects/#{server_name}/site/apcclear.php"
+      sudo "sh -c 'curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_project_name}/site/apcclear.php'"
+      sudo "chmod 777 /home/projects/#{server_project_name}/site/apcclear.php"
     end
-    
+
     desc "Clear the APC cache"
     task :clear do
-      sudo "curl http://#{domain}/apcclear.php"
+      hostname = "#{domain}"
+      server_project_name = "#{server_name}"
+      if !server_project_name.nil? && !server_project_name.empty?
+        hostname = "#{server_project_name}.#{hostname}"
+      end
+      sudo "curl http://#{hostname}/apcclear.php"
     end
+
+  end
 
   end
 
