@@ -31,7 +31,7 @@ namespace :files do
       Kumastrano.say log
     end
 
-  end    
+  end
 end
 
 namespace :database do
@@ -121,7 +121,7 @@ namespace :kuma do
       if server_project_name.nil? || server_project_name.empty?
         server_project_name = domain.split('.')[0]
       end
-      sudo "sh -c 'if [ ! -f /home/projects/#{server_name}/site/apcclear.php ]; then curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_name}/site/apcclear.php; fi'"
+      sudo "sh -c 'if [ ! -f /home/projects/#{server_project_name}/site/apcclear.php ]; then curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_project_name}/site/apcclear.php; fi'"
       sudo "chmod 777 /home/projects/#{server_project_name}/site/apcclear.php"
     end
 
@@ -134,8 +134,6 @@ namespace :kuma do
       end
       sudo "curl http://#{hostname}/apcclear.php"
     end
-
-  end
 
   end
 
@@ -210,7 +208,7 @@ before "symfony:vendors:reinstall", "kuma:ssh_socket:fix"
 before "symfony:vendors:upgrade", "kuma:ssh_socket:fix"
 before "symfony:composer:update", "kuma:ssh_socket:fix"
 before "symfony:composer:install", "kuma:ssh_socket:fix"
-before "symfony:composer:dump_autoload", "kuma:ssh_socket:fix" # The cache folder of composer was the one from the ssh user ... while it should be the one of sudo ... 
+before "symfony:composer:dump_autoload", "kuma:ssh_socket:fix" # The cache folder of composer was the one from the ssh user ... while it should be the one of sudo ...
 after "symfony:vendors:install", "kuma:ssh_socket:unfix"
 after "symfony:vendors:reinstall", "kuma:ssh_socket:unfix"
 after "symfony:vendors:upgrade", "kuma:ssh_socket:unfix"
@@ -218,7 +216,7 @@ after "symfony:composer:update", "kuma:ssh_socket:unfix"
 after "symfony:composer:install", "kuma:ssh_socket:unfix"
 after "symfony:composer:dump_autoload", "kuma:ssh_socket:unfix"
 
-# set the right permissions on the vendor folder ... 
+# set the right permissions on the vendor folder ...
 after "symfony:composer:copy_vendors" do
   sudo "sh -c 'if [ -d #{latest_release}/vendor ] ; then chown -R #{application}:#{application} #{latest_release}/vendor; fi'"
 end
@@ -252,7 +250,7 @@ after "deploy:create_symlink", "kuma:apc:clear"
 before "deploy:update" do
   Kumastrano.say "executing ssh-add"
   %x(ssh-add)
-  
+
   kuma.changelog
   if !Kumastrano.ask "Are you sure you want to continue deploying?", "y"
     exit
@@ -269,7 +267,7 @@ end
 
 after :deploy do
   kuma.fix.cron
- 
+
   if env == "production" && !newrelic_appname.nil? && !newrelic_appname.empty? && !newrelic_license_key.nil? && !newrelic_appname.empty?
     ::NewRelic::Agent.config.apply_config({:license_key => newrelic_license_key}, 1)
     set :newrelic_rails_env, env
