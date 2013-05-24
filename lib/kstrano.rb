@@ -121,7 +121,7 @@ namespace :kuma do
       if server_project_name.nil? || server_project_name.empty?
         server_project_name = domain.split('.')[0]
       end
-      sudo "sh -c 'curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_project_name}/site/apcclear.php'"
+      sudo "sh -c 'if [ ! -f /home/projects/#{server_name}/site/apcclear.php ]; then curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_name}/site/apcclear.php; fi'"
       sudo "chmod 777 /home/projects/#{server_project_name}/site/apcclear.php"
     end
 
