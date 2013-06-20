@@ -63,9 +63,9 @@ namespace :kuma do
   task :changelog do
     if releases.length > 0
       Kumastrano::GitHelper.fetch
-      changelog = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{current_revision}..#{real_revision}`
+      changelog = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{current_revision.strip}..#{real_revision.strip}`
 
-      if current_revision == real_revision && changelog.strip.empty?
+      if current_revision.strip == real_revision.strip && changelog.strip.empty?
         changelog = "No changes found!"
       end
 
