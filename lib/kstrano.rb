@@ -4,7 +4,7 @@ set :php_bin, "php"
 set :copy_vendors, true
 
 set :force_schema, false
-set :force_migrations, false
+set :force_migrations, true
 
 set :webserver_user,    "www-data"
 set :permission_method, :acl
