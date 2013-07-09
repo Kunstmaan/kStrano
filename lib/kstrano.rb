@@ -1,93 +1,63 @@
-# PHP binary to execute
-set :php_bin, "php"
+require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
+require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 
-set :copy_vendors, true
-
-set :force_schema, false
-set :force_migrations, false
+require 'new_relic/recipes'
+require 'new_relic/agent'
 
 set :webserver_user,    "www-data"
 set :permission_method, :acl
 set :server_name, nil
 set :port, 22
 
-set :dump_assetic_assets, true
-set :interactive_mode, false
-set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
-
-require "#{File.dirname(__FILE__)}/helpers/git_helper.rb"
-require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
-require 'rexml/document'
-require 'etc'
-require 'new_relic/recipes'
-require 'new_relic/agent'
-
 namespace :files do
   namespace :move do
 
     desc "Rsync uploaded files from online to local"
     task :to_local do
-      Kumastrano.say "Copying files"
+      KStrano.say "Copying files"
       log = `rsync -qazhL --progress --del --rsh=/usr/bin/ssh -e "ssh -p #{port}" --exclude "*bak" --exclude "*~" --exclude ".*" #{domain}:#{current_path}/web/uploads/* web/uploads/`
-      Kumastrano.say log
+      KStrano.say log
     end
 
-  end
-end
-
-namespace :database do
-  namespace :move do
-    desc "DISABLED"
-    task :to_remote, :roles => :db, :only => { :primary => true } do
-      Kumastrano.say "This feature is DISABLED!"
-      exit
-    end
   end
 end
 
 namespace :kuma do
-
-  namespace :ssh_socket do
-
-    task :fix do
-      sudo "chmod 777 -R `dirname $SSH_AUTH_SOCK`"
-    end
-
-    task :unfix do
-      sudo "chmod 775 -R `dirname $SSH_AUTH_SOCK`"
-    end
-
-  end
-
   desc "Show log of what changed compared to the deployed version"
   task :changelog do
     if releases.length > 0
-      Kumastrano::GitHelper.fetch
+      KStrano::GitHelper.fetch
       changelog = `git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --no-merges #{current_revision.strip}..#{real_revision.strip}`
 
       if current_revision.strip == real_revision.strip && changelog.strip.empty?
         changelog = "No changes found!"
       end
 
-      Kumastrano.say "Changelog of what will be deployed to #{domain}"
-      Kumastrano.say changelog, ''
+      KStrano.say "Changelog of what will be deployed to #{domain}"
+      KStrano.say changelog, ''
+    end
+  end
+
+  namespace :ssh_socket do
+    task :fix do
+      sudo "chmod 777 -R `dirname $SSH_AUTH_SOCK`"
+    end
+    task :unfix do
+      sudo "chmod 775 -R `dirname $SSH_AUTH_SOCK`"
     end
   end
 
 
   namespace :sync do
-
     desc "sync the database and rsync the files"
     task :to_local do
       files.move.to_local
-      Kumastrano.say "Copying database"
+      KStrano.say "Copying database"
       database.move.to_local
     end
-
   end
 
   namespace :fix do
-
     desc "Run fixcron for the current project"
     task :cron do
       sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixcron.py ] ; then cd /opt/kDeploy/tools/; python fixcron.py #{application}; fi'"
@@ -97,51 +67,10 @@ namespace :kuma do
     task :perms do
       sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixperms.py ] ; then cd /opt/kDeploy/tools/; python fixperms.py #{application}; fi'"
     end
-
   end
-
-  namespace :fpm do
-
-    desc "Reload PHP5 fpm"
-    task :reload do
-      sudo "/etc/init.d/php5-fpm reload"
-    end
-
-    desc "Restart PHP5 fpm"
-    task :restart do
-      sudo "/etc/init.d/php5-fpm restart"
-    end
-
-  end
-
-  namespace :apc do
-
-    desc "Prepare for APC cache clear"
-    task :prepare_clear do
-      server_project_name = "#{server_name}"
-      if server_project_name.nil? || server_project_name.empty?
-        server_project_name = domain.split('.')[0]
-      end
-      sudo "sh -c 'if [ ! -f /home/projects/#{server_project_name}/site/apcclear.php ]; then curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_project_name}/site/apcclear.php; fi'"
-      sudo "chmod 777 /home/projects/#{server_project_name}/site/apcclear.php"
-    end
-
-    desc "Clear the APC cache"
-    task :clear do
-      hostname = "#{domain}"
-      server_project_name = "#{server_name}"
-      if !server_project_name.nil? && !server_project_name.empty?
-        hostname = "#{server_project_name}.#{hostname}"
-      end
-      sudo "curl http://#{hostname}/apcclear.php"
-    end
-
-  end
-
 end
 
 namespace :deploy do
-
   task :create_symlink, :except => { :no_release => true } do
     on_rollback do
       if previous_release
@@ -151,55 +80,6 @@ namespace :deploy do
       end
     end
     try_sudo "ln -sfT #{latest_release} #{current_path}"
-  end
-
-  desc "Deploy and run pending migrations"
-  task :migrations, :roles => :app, :except => { :no_release => true }, :only => { :primary => true } do
-    set :force_migrations, true
-    deploy.update
-    deploy.restart
-  end
-
-  desc "Deploy without copying the vendors from a previous install"
-  task :clean, :roles => :app, :except => { :no_release => true } do
-    set :copy_vendors, false
-    deploy.update
-    deploy.restart
-  end
-
-  namespace :prefer do
-
-    desc "Deploy without copying the vendors from a previous install and use composer option --prefer-source"
-    task :source, :roles => :app, :except => { :no_release => true } do
-      set :composer_options, "--no-scripts --verbose --prefer-source --optimize-autoloader"
-      deploy.clean
-    end
-
-  end
-
-  namespace :schema do
-
-    desc "Deploy and update the schema"
-    task :update, :roles => :app, :except => { :no_release => true }, :only => { :primary => true } do
-      set :force_schema, true
-      deploy.update
-      deploy.restart
-    end
-
-  end
-
-end
-
-# make it possible to run schema:update and migrations:migrate at the right place in the flow
-after "symfony:bootstrap:build" do
-  if model_manager == "doctrine"
-    if force_schema
-      symfony.doctrine.schema.update
-    end
-
-    if force_migrations
-      symfony.doctrine.migrations.migrate
-    end
   end
 end
 
@@ -216,11 +96,6 @@ after "symfony:vendors:upgrade", "kuma:ssh_socket:unfix"
 after "symfony:composer:update", "kuma:ssh_socket:unfix"
 after "symfony:composer:install", "kuma:ssh_socket:unfix"
 after "symfony:composer:dump_autoload", "kuma:ssh_socket:unfix"
-
-# set the right permissions on the vendor folder ...
-after "symfony:composer:copy_vendors" do
-  sudo "sh -c 'if [ -d #{latest_release}/vendor ] ; then chown -R #{application}:#{application} #{latest_release}/vendor; fi'"
-end
 
 # Before update_code:
 ## Make the cached_copy readable for the current user
@@ -239,21 +114,16 @@ end
 ## Fix the permissions of the latest release, so that it's readable for the project user
 before "deploy:finalize_update" do
   on_rollback { sudo "rm -rf #{release_path}; true" } # by default capistrano will use the run command, but everything has project user rights in our server setup, so use try_sudo in stead of run.
-  sudo "sh -c 'if [ ! -f #{release_path}/app/config/parameters.ini ] && [ ! -f #{release_path}/app/config/parameters.yml ] ; then if [ -f #{release_path}/paramDecode ] ; then chmod -R ug+rx #{latest_release}/paramDecode && cd #{release_path} && ./paramDecode; elif [ -f #{release_path}/param ] ; then chmod -R ug+rx #{latest_release}/param && cd #{release_path} && ./param decode; fi; fi'"
   sudo "chown -R #{application}:#{application} #{latest_release}"
   sudo "setfacl -R -m group:admin:rwx #{latest_release}"
 end
 
-before "deploy:finalize_update", "kuma:apc:prepare_clear"
-after "deploy:finalize_update", "kuma:apc:clear"
-after "deploy:create_symlink", "kuma:apc:clear"
-
 before "deploy:update" do
-  Kumastrano.say "executing ssh-add"
+  KStrano.say "executing ssh-add"
   %x(ssh-add)
 
   kuma.changelog
-  if !Kumastrano.ask "Are you sure you want to continue deploying?", "y"
+  if !KStrano.ask "Are you sure you want to continue deploying?", "y"
     exit
   end
 end

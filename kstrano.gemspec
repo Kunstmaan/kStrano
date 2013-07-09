@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
     Deploying symfony2 applications for the kDeploy server setup.
   DESC
 
-  s.files       = Dir.glob("lib/**/*")
+  s.files       = Dir.glob("{lib,resources}/**/*")
   s.require_path = 'lib'
   s.has_rdoc    = false
 

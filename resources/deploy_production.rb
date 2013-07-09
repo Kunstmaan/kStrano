@@ -1,5 +1,4 @@
-set :env, "production"
-set :symfony_env_prod,  "prod"
+set :env, "prod"
 set :domain, ""
 set :port, 9999
 
