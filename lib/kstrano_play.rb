@@ -22,14 +22,17 @@ module KStrano
         end
 
         namespace :play do
+        	desc "Build the app"
 		      task :package do
 		        try_sudo "bash -c 'PATH=$PATH:/home/projects/#{application}/play/default:. && cd #{latest_release} && play clean compile stage'"
 		      end
 
+		      desc "Start the server"
 		      task :start do
 		        try_sudo "bash -ic 'cd #{current_path} && PLAY_ENV=#{env} ./start.sh'"
 		      end
 
+		      desc "Stop the server"
 		      task :stop do
 		        try_sudo "bash -c 'cd #{current_path} && ./stop.sh'"
 		      end

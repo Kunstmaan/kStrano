@@ -1,6 +1,6 @@
 # Introducing [kStrano][kstrano]
 
-[Capistrano][capistrano] is an open source tool for running scripts on multiple servers. It’s primary use is for easily deploying applications. [kStrano][kstrano] (KumaStrano) is a deployment “recipe” to work with Kunstmaan specific applications to make your job a lot easier. It is a wrapper arround [Capifony][capifony].
+[Capistrano][capistrano] is an open source tool for running scripts on multiple servers. It’s primary use is for easily deploying applications. [kStrano][kstrano] (KumaStrano) is a deployment “recipe” to work with Kunstmaan specific applications to make your job a lot easier.
 
 # Prerequisites
 
@@ -12,14 +12,11 @@
  * When you still need to install [Ruby][ruby], take a look at [Ruby Version Manager][rvm] or [rbenv][rbenv], which makes installing ruby super easy!
   * [Tutorial on how to install rvm on ubuntu][rvmtut]
 
-* The project for now has only been tested with [Symfony][symfony] projects, to make it work with [Symfony][symfony] we also need the gem [Capifony][capifony].
-
 # Installing [kStrano][kstrano]
 
 Before you install make sure you have no older versions of [kStrano][kstrano] or [Capifony][capifony]:
 
 ```bash
-gem uninstall capifony
 gem uninstall kstrano
 ```
 
@@ -27,6 +24,7 @@ You can install kStrano using rubyGems:
 
 ```bash
 gem install kstrano
+gem cleanup railsless-deply, capifony, capistrano
 ```
 
 Or you can download the source and install it manually:
@@ -41,33 +39,49 @@ gem install kstrano-<version>.gem
 ```bash
 cd to/your/project/path
 kumafy .
-``` 
+```
 
 You can also do a force install, which will update all the files:
 
 ```bash
 cd to/your/project/path
 kumafy . --force
-``` 
+```
+
+# Available [kStrano][kstrano] commands
+
+* cap kuma:fix:cron, this will run the fixcron command on the server from [kDeploy][kdeploy].
+* cap kuma:fix:perms, this will run the fixperms command on the server from [kDeploy][kdeploy].
+* cap kuma:fpm:reload, this will reload fpm on the server.
+* cap kuma:fpm:restart, this will restart fpm on the server.
+* cap kuma:apc:clear, this will clear the apc cache.
+* cap kuma:changelog, this will show the log of what changed compared to the deployed version
+* cap kuma:sync, this will sync the database and rsync the uploaded files from online to local
+
+* cap files:move:to_local, this will rsync the uploaded files from online to local
+
+# PHP recipe
+
+The PHP recipe is based on [Capifony][capifony], and it adds a few things to make it work with our hosting platform at Kunstmaan.
 
 by default the configuration files are made for Symfony version > 2.1, and they use composer. To make it work with a version without composer change
 
 ```ruby
 set :use_composer, true
 set :update_vendors, false
-``` 
+```
 
-to 
+to
 
 ```ruby
 set :use_composer, false
 set :vendors_mode, "install"
 set :update_vendors, true
-``` 
+```
 
 in your deploy.rb
 
-# Minimal setup
+## Minimal setup
 
 - Add param to your github repo
 - Run ./param encode and add app/config/parameters.aes to your github repo
@@ -76,26 +90,14 @@ in your deploy.rb
 
 From now on you should be able to run ```cap:deploy``` to deploy the project...
 
-# Available [kStrano][kstrano] commands
-
-* cap kuma:fix:cron, this will run the fixcron command on the server from [kDeploy][kdeploy].
-* cap kuma:fix:perms, this will run the fixperms command on the server from [kDeploy][kdeploy].
-* cap kuma:fpm:reload, this will reload fpm on the server.
-* cap kuma:fpm:restart, this will restart fpm on the server.
-* cap kuma:apc:clear, this will clear the apc cache. 
-* cap kuma:changelog, this will show the log of what changed compared to the deployed version
-* cap kuma:sync, this will sync the database and rsync the uploaded files from online to local
-
-* cap files:move:to_local, this will rsync the uploaded files from online to local
-
-# Extra deploy commands which are available through the [kStrano][kstrano] gem:
+## Custom commands for PHP next to the one capifony makes available:
 
 * cap deploy:migrations, this will deploy and execute the pending migrations
 * cap deploy:schema:update, this will deploy and update the schema
 * cap deploy:clean, this will deploy without copying the vendors
 * cap deploy:prefer:source, this will deploy without copying the vendors and using composer option --prefer-source
 
-# Placing the site in Maintenance mode
+## Placing the site in Maintenance mode
 To place the site in maintenance mode, we first need to edit the htaccess file to redirect users to the maintenance page.
 Place the following snippet in your htaccess file.
 
@@ -110,32 +112,51 @@ RewriteRule ^.*$ - [R=503,L]
 ```
 
 This will present the maintenance page to the user if the maintenance.html file is present and the user's IP is not allowed.
-To place the site in maintenance mode, issue the next command. 
+To place the site in maintenance mode, issue the next command.
 This command will create a maintenance.html file in your data/releases/*/web directory
 
 ```bash
 cap deploy:web:disable
 ```
 
-In order to place the site out of maintenance mode, issue the next command. This command will remove the created 
+In order to place the site out of maintenance mode, issue the next command. This command will remove the created
 maintenance.html file that was created by the previous command.
 
 ```bash
 cap deploy:web:enable
 ```
 
-##Customizing the maintenance.html
-The standard maintenance.html page just states that the site is in maintenance and will be back shortly. 
+# Play recipe
+
+The play recipe is a very simple recipe which is based on [railsless-deploy][railslessdeploy] and adds tasks to package the app, start and stop the server.
+
+If you want newrelic support, make sure you put the jar in newrelic/newrelic.jar.
+
+## Available commands
+
+* cap play:start, this will start the play server
+* cap play:stop, this will stop the current play server
+
+# Drupal recipe
+
+# Magento recipe
+
+### Customizing the maintenance.html
+The standard maintenance.html page just states that the site is in maintenance and will be back shortly.
 In order to have a custom maintenance page, you need to set the maintenance_template_path in your deploy.rb.
 
 ```bash
 set :maintenance_template_path, "location of your custom template"
 ```
 
-Now you will see your own custom maintenance page. Note that the deploy:web:disable command copies the content from the template to the maintenance.html file. 
+Now you will see your own custom maintenance page. Note that the deploy:web:disable command copies the content from the template to the maintenance.html file.
 So you can not use relative paths in your custom template if you want to show images, custom css etc.
 
 # Changelog
+
+* 10/07/2013 (version 1.1.0)
+ * updated to work with [Capifony][capifony] 2.2.10
+ * multiple recipes available for now play, symfony2
 
 * 13/02/2013 (version 0.0.30)
  * updated to work with [Capifony][capifony] 2.2.7
@@ -165,3 +186,4 @@ So you can not use relative paths in your custom template if you want to show im
 [kcapifony]: https://github.com/Kunstmaan/kCapifony "kCapifony"
 [kdeploy]: https://github.com/Kunstmaan/kDeploy "kDeploy"
 [kbot]: https://github.com/Kunstmaan/kBot "kBot"
+[railslessdeploy]: https://github.com/leehambley/railsless-deploy "railsless-deploy"
