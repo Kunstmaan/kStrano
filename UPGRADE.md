@@ -20,6 +20,8 @@ require 'kstrano_symfony2'
 load 'app/config/deploy'
 ````
 
+the require statement of capifony_symfony2 should be removed and `load Gem.find_files('kstrano.rb').last.to_s` should be replaced by `require 'kstrano_symfony2'`
+
 ### Upgrade to version 0.0.21:
 
 To upgrade to the new version make sure all the previous installs are removed:
