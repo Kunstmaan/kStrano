@@ -8,6 +8,7 @@ module KStrano
 
         ## Custom stuff here
 
+	    end
     end
   end
 end

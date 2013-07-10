@@ -1,5 +1,6 @@
 require 'railsless-deploy'
 require 'capifony_symfony2'
+require "#{File.dirname(__FILE__)}/helpers/kuma_helper.rb"
 
 module KStrano
   module Symfony2

@@ -25,4 +25,5 @@ Gem::Specification.new do |s|
   s.add_dependency(%q<broach>, [">= 0.2.1"])
   s.add_dependency(%q<newrelic_rpm>, [">= 3.5.5.38"])
   s.add_dependency(%q<railsless-deploy>, ["~> 1.1.2"])
+
 end

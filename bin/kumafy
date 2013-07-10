@@ -16,7 +16,7 @@ RECIPES = {
     "config_path" => "app/config"
   },
   "play" => {
-    "config_path" => "app/config"
+    "config_path" => "conf"
   },
   "drupal" => {
     "config_path" => "app/config"
@@ -170,14 +170,25 @@ def update_symfony2(ui, base, context, force)
   Dir.mkdir(build_dir) unless File.directory?(build_dir)
   Dir.mkdir(web_dir) unless File.directory?(web_dir)
 
-  {
-    File.join(build_dir, "phpcs.xml") => "phpcs.xml",
-    File.join(build_dir, "phpmd.xml") => "phpmd.xml",
-    File.join(build_dir, "phpdox.xml") => "phpdox.xml",
-    File.join(base, "app", "phpunit.xml.dist") => "phpunit.xml.dist",
-    File.join(web_dir, "app_test.php") => "app_test.php",
-    File.join(base, "behat.yml-dist") => "behat.yml-dist"
-  }.each do |destination_file, source_file|
+  copy_resources({
+    File.join(build_dir, "phpcs.xml") => "#{context['recipe']}/phpcs.xml",
+    File.join(build_dir, "phpmd.xml") => "#{context['recipe']}/phpmd.xml",
+    File.join(build_dir, "phpdox.xml") => "#{context['recipe']}/phpdox.xml",
+    File.join(base, "app", "phpunit.xml.dist") => "#{context['recipe']}/phpunit.xml.dist",
+    File.join(web_dir, "app_test.php") => "#{context['recipe']}/app_test.php",
+    File.join(base, "behat.yml-dist") => "#{context['recipe']}/behat.yml-dist"
+  }, ui, context)
+end
+
+def update_play(ui, base, context, force)
+  copy_resources({
+    File.join(base, "start.sh") => "#{context['recipe']}/start.sh",
+    File.join(base, "stop.sh") => "#{context['recipe']}/stop.sh"
+  }, ui, context)
+end
+
+def copy_resources(resource_map, ui, context)
+  resource_map.each do |destination_file, source_file|
     write = true
 
     if File.exists?(destination_file)
@@ -188,16 +199,15 @@ def update_symfony2(ui, base, context, force)
     end
 
     if write
-      content = read_resource_file("#{context['recipe']}/#{source_file}")
+      content = read_resource_file("#{source_file}")
 
       File.open(destination_file, "w") do |f|
         content.each_line do |line|
-          f.print line
+          f.print line.sub("{{application_name}}", context['app_name'])
         end
       end
     end
   end
-
 end
 
 def read_resource_file(filename)
