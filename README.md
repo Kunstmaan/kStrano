@@ -157,6 +157,8 @@ So you can not use relative paths in your custom template if you want to show im
 * 10/07/2013 (version 1.1.0)
  * updated to work with [Capifony][capifony] 2.2.10
  * multiple recipes available for now play, symfony2
+ * fix for clearing the APC cache
+ * bower support
 
 * 13/02/2013 (version 0.0.30)
  * updated to work with [Capifony][capifony] 2.2.7
