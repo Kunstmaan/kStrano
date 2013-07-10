@@ -87,14 +87,14 @@ namespace :frontend do
   namespace :npm do
     desc "Install the node modules"
     task :install do
-      run "#{try_sudo} sh -c 'cd #{latest_release} && npm install'"
+      run "#{try_sudo} -i sh -c 'cd #{latest_release} && npm install'"
     end
   end
 
   namespace :bower do
     desc "Install the javascript vendors"
     task :install do
-      run "#{try_sudo} sh -c 'cd #{latest_release} && bower install'"
+      run "#{try_sudo} -i sh -c 'cd #{latest_release} && bower install'"
     end
   end
 end
