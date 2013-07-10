@@ -1,3 +1,4 @@
+require 'railsless-deploy'
 require 'capifony_symfony2'
 
 module KStrano
@@ -20,6 +21,11 @@ module KStrano
         set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
 
         set (:symfony_env_prod) {"#{env}"}
+
+        set :uploaded_files_path, 'web/uploads'
+
+        set :npm_install, true
+        set :bower_install, true
 
         namespace :database do
           namespace :move do
@@ -63,6 +69,7 @@ module KStrano
                   hostname = "#{server_project_name}.#{hostname}"
                 end
                 sudo "curl http://#{hostname}/apcclear.php"
+                sudo "pkill -QUIT -e -f \"^php-fpm: pool #{application} \" "
               end
             end
         end
@@ -121,6 +128,17 @@ module KStrano
 
         before "deploy:finalize_update" do
           sudo "sh -c 'if [ ! -f #{release_path}/app/config/parameters.ini ] && [ ! -f #{release_path}/app/config/parameters.yml ] ; then if [ -f #{release_path}/paramDecode ] ; then chmod -R ug+rx #{latest_release}/paramDecode && cd #{release_path} && ./paramDecode; elif [ -f #{release_path}/param ] ; then chmod -R ug+rx #{latest_release}/param && cd #{release_path} && ./param decode; fi; fi'"
+        end
+
+        ["symfony:composer:install", "symfony:composer:update", "symfony:vendors:install", "symfony:vendors:upgrade"].each do |action|
+          after action do |variable|
+            if npm_install
+            end
+
+            if bower_install
+              frontend.bower.install
+            end
+          end
         end
 
         before "deploy:finalize_update", "kuma:apc:prepare_clear"

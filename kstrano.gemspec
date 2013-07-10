@@ -19,9 +19,10 @@ Gem::Specification.new do |s|
   s.email       = 'support@kunstmaan.be'
   s.homepage    = 'https://github.com/Kunstmaan/kStrano'
 
-  s.add_dependency(%q<capifony>, [">=2.2.8"])
+  s.add_dependency(%q<capifony>, [">=2.2.10"])
   s.add_dependency(%q<capistrano-ext>, [">=1.2.1"])
   s.add_dependency(%q<json>, [">= 1.6.6"])
   s.add_dependency(%q<broach>, [">= 0.2.1"])
   s.add_dependency(%q<newrelic_rpm>, [">= 3.5.5.38"])
+  s.add_dependency(%q<railsless-deploy>, ["~> 1.1.2"])
 end

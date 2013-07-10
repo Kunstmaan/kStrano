@@ -6,7 +6,7 @@ set :keep_releases, 5
 default_run_options[:pty] = true
 
 # Stages
-set :stage_dir, "app/config/deploy"
+set :stage_dir, ""
 set :stages, %w{production staging}
 set :default_stage, "production"
 require 'capistrano/ext/multistage'

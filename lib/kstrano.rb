@@ -15,7 +15,7 @@ namespace :files do
     desc "Rsync uploaded files from online to local"
     task :to_local do
       KStrano.say "Copying files"
-      log = `rsync -qazhL --progress --del --rsh=/usr/bin/ssh -e "ssh -p #{port}" --exclude "*bak" --exclude "*~" --exclude ".*" #{domain}:#{current_path}/web/uploads/* web/uploads/`
+      log = `rsync -qazhL --progress --del --rsh=/usr/bin/ssh -e "ssh -p #{port}" --exclude "*bak" --exclude "*~" --exclude ".*" #{domain}:#{current_path}/#{uploaded_files_path}/* #{uploaded_files_path}/`
       KStrano.say log
     end
 
@@ -80,6 +80,22 @@ namespace :deploy do
       end
     end
     try_sudo "ln -sfT #{latest_release} #{current_path}"
+  end
+end
+
+namespace :frontend do
+  namespace :npm do
+    desc "Install the node modules"
+    task :install do
+      run "#{try_sudo} sh -c 'cd #{latest_release} && npm install'"
+    end
+  end
+
+  namespace :bower do
+    desc "Install the javascript vendors"
+    task :install do
+      run "#{try_sudo} sh -c 'cd #{latest_release} && bower install'"
+    end
   end
 end
 

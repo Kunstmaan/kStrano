@@ -9,9 +9,22 @@ require 'uri'
 
 HighLine.track_eof = false
 
-BASE_PATH = File.realpath(File.dirname(Gem.find_files('kstrano.rb').last.to_s) + '/../')
-RESOURCES_BASE_PATH = "#{BASE_PATH}/resources"
-RECIPES = ["symfony2", "play", "drupal", "magento"]
+BASE_PATH = File.realpath(File.dirname(Gem.find_files('kstrano.rb').last.to_s) + '/../') # the directory of this GEM
+RESOURCES_BASE_PATH = "#{BASE_PATH}/resources" # the directory of the resources folder
+RECIPES = {
+  "symfony2" => {
+    "config_path" => "app/config"
+  },
+  "play" => {
+    "config_path" => "app/config"
+  },
+  "drupal" => {
+    "config_path" => "app/config"
+  },
+  "magento" => {
+    "config_path" => "app/config"
+  }
+} # all the supported recipes
 
 def update_capfile(ui, base, context, force)
   file = File.join(base, "Capfile")
@@ -26,9 +39,9 @@ def update_capfile(ui, base, context, force)
       end
     end
 
-    context["recipe"] = content.match("kstrano_(#{RECIPES.join('|')})")[1]
+    context["recipe"] = content.match("kstrano_(#{RECIPES.keys.join('|')})")[1]
   else
-    context["recipe"] ||= ui.ask("What type of application is it? (#{RECIPES.join(', ')})").downcase
+    context["recipe"] ||= ui.ask("What type of application is it? (#{RECIPES.keys.join(', ')})").downcase
 
     if !RECIPES.include? context['recipe']
       abort "No such recipe (#{context['recipe']}"
@@ -39,7 +52,7 @@ def update_capfile(ui, base, context, force)
       load 'deploy' if respond_to?(:namespace) # cap2 differentiator
 
       require 'kstrano_#{recipe}'
-      load 'app/config/deploy'
+      load '#{RECIPES[recipe]['config_path']}/deploy'
     FILE
 
     File.open(file, "w") { |f| f.write(content)}
@@ -48,7 +61,7 @@ end
 
 def update_deploy_config(ui, base, context, force)
 
-  deploy = File.join(base, "app", "config", "deploy.rb")
+  deploy = File.join(base, RECIPES[context['recipe']]['config_path'], "deploy.rb")
   write_deploy = true
 
   if write_deploy
@@ -57,6 +70,7 @@ def update_deploy_config(ui, base, context, force)
     app_name = context["app_name"]
     deploy_config_file.gsub!(/(:application,\s)(\"\")/, '\1' + "\"#{app_name}\"")
     deploy_config_file.gsub!(/(:admin_runner,\s)(\"\")/, '\1' + "\"#{app_name}\"")
+    deploy_config_file.gsub!(/(:stage_dir,\s)(\"\")/, '\1' + "\"#{RECIPES[context['recipe']]['config_path']}/deploy\"")
 
     newrelic_appname = ui.ask("What's the name of the application in new relic?")
     if !newrelic_appname.nil? && !newrelic_appname.empty?
@@ -90,7 +104,7 @@ def update_deploy_config(ui, base, context, force)
     end
   end
 
-  deploy_dir = File.join(base, "app", "config", "deploy")
+  deploy_dir = File.join(base, RECIPES[context['recipe']]['config_path'], "deploy")
   Dir.mkdir(deploy_dir) unless File.directory?(deploy_dir)
 
   {
