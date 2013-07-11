@@ -94,7 +94,7 @@ module KStrano
           namespace :prefer do
             desc "Deploy without copying the vendors from a previous install and use composer option --prefer-source"
             task :source, :roles => :app, :except => { :no_release => true } do
-              set :composer_options, "--no-scripts --verbose --prefer-source --optimize-autoloader"
+              set :composer_options, "--no-dev --no-scripts --verbose --prefer-source --optimize-autoloader"
               deploy.clean
             end
 
