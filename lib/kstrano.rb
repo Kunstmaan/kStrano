@@ -11,6 +11,8 @@ set :port, 22
 set :shared_files, false
 set :shared_children, false
 
+set :copy_node_modules, true
+set :copy_bower_vendors, true
 
 namespace :files do
   namespace :move do
@@ -167,6 +169,10 @@ namespace :frontend do
     task :install do
       run "#{try_sudo} -i sh -c 'cd #{latest_release} && npm install'"
     end
+
+    task :copy, :except => { :no_release => true } do
+      run "#{try_sudo} sh -c 'modulesDir=#{current_path}/node_modules; if [ -d $modulesDir ] || [ -h $modulesDir ]; then cp -a $modulesDir #{latest_release}/node_modules; fi;'"
+    end
   end
 
   namespace :bower do
@@ -174,6 +180,29 @@ namespace :frontend do
     task :install do
       run "#{try_sudo} -i sh -c 'cd #{latest_release} && bower install'"
     end
+
+    task :copy, :except => { :no_release => true } do
+      run "#{try_sudo} sh -c 'vendorDir=#{current_path}/web/vendor; if [ -d $vendorDir ] || [ -h $vendorDir ]; then cp -a $vendorDir #{latest_release}/web/vendor; fi;'"
+    end
+  end
+
+  namespace :grunt do
+    desc "Executes the grunt build task"
+    task :build do
+      run "#{try_sudo} -i sh -c 'cd #{latest_release} && grunt build'"
+    end
+  end
+end
+
+before "frontend:npm:install" do
+  if copy_node_modules
+    frontend.npm.copy
+  end
+end
+
+before "frontend:bower:install" do
+  if copy_bower_vendors
+    frontend.bower.copy
   end
 end
 

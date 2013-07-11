@@ -27,6 +27,7 @@ module KStrano
 
         set :npm_install, true
         set :bower_install, true
+        set :grunt_build, true
 
         namespace :database do
           namespace :move do
@@ -133,11 +134,16 @@ module KStrano
 
         ["symfony:composer:install", "symfony:composer:update", "symfony:vendors:install", "symfony:vendors:upgrade"].each do |action|
           after action do |variable|
-            if npm_install
-            end
-
             if bower_install
               frontend.bower.install
+            end
+
+            if npm_install
+              frontend.npm.install
+            end
+
+            if grunt_build
+              frontend.grunt.build
             end
           end
         end
