@@ -70,7 +70,7 @@ module KStrano
                   hostname = "#{server_project_name}.#{hostname}"
                 end
                 sudo "curl http://#{hostname}/apcclear.php"
-                sudo "pkill -QUIT -e -f \"^php-fpm: pool #{application} \" "
+                sudo "pkill -QUIT -f \"^php-fpm: pool #{application} \" "
               end
             end
         end
