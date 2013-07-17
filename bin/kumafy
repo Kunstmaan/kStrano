@@ -9,86 +9,108 @@ require 'uri'
 
 HighLine.track_eof = false
 
-DEPLOY_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/deploy.rb"
-PRODUCTION_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/production.rb"
-STAGING_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/staging.rb"
+BASE_PATH = File.realpath(File.dirname(Gem.find_files('kstrano.rb').last.to_s) + '/../') # the directory of this GEM
+RESOURCES_BASE_PATH = "#{BASE_PATH}/resources" # the directory of the resources folder
+RECIPES = {
+  "symfony2" => {
+    "config_path" => "app/config"
+  },
+  "play" => {
+    "config_path" => "conf"
+  },
+  "drupal" => {
+    "config_path" => "app/config"
+  },
+  "magento" => {
+    "config_path" => "app/config"
+  }
+} # all the supported recipes
 
-BUILD_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/build.xml"
-PHPCS_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpcs.xml"
-PHPMD_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpmd.xml"
-PHPDOX_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpdox.xml"
-PHPUNIT_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/phpunit.xml.dist"
-APPTEST_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/app_test.php"
-BEHAT_GIST = "https://raw.github.com/Kunstmaan/kStrano/master/config/behat.yml-dist"
-
-def update_capfile(base, context, force)
+def update_capfile(ui, base, context, force)
   file = File.join(base, "Capfile")
 
-  if !File.exists?("Capfile")
-    abort "Make sure the project has been capified or capifonied."
-  else
-    includestr = "load Gem.find_files('kstrano.rb').last.to_s"
-    fcontent = ""
+  if File.exists?(file)
+    warn "[skip] #{file} already exists"
+
+    content = ""
     File.open(file, "r") do |f|
       f.each do |line|
-        fcontent << line
-        if line.include? includestr
-          abort "This project is already kumafied!" unless force
-          return
-        end
+        content << line
       end
     end
 
-    File.open(file, "w") do |f|
-      fcontent.each_line do |line|
-        if line.include? "load 'app/config/deploy'"
-          f.print includestr + "\r\n"
-        end
-        f.print line
-      end
+    context["recipe"] = content.match("kstrano_(#{RECIPES.keys.join('|')})")[1]
+  else
+    context["recipe"] ||= ui.ask("What type of application is it? (#{RECIPES.keys.join(', ')})").downcase
+
+    if !RECIPES.include? context['recipe']
+      abort "No such recipe (#{context['recipe']}"
     end
+
+    recipe = context["recipe"]
+    content = unindent(<<-FILE)
+      load 'deploy' if respond_to?(:namespace) # cap2 differentiator
+
+      require 'kstrano_#{recipe}'
+      load '#{RECIPES[recipe]['config_path']}/deploy'
+    FILE
+
+    File.open(file, "w") { |f| f.write(content)}
   end
 end
 
 def update_deploy_config(ui, base, context, force)
-  
-  deploy = File.join(base, "app", "config", "deploy.rb")
+
+  deploy = File.join(base, RECIPES[context['recipe']]['config_path'], "deploy.rb")
   write_deploy = true
-  
+
   if write_deploy
-    dirname = File.basename(Dir.getwd)
-    deploy_gist = get_plain_secure(DEPLOY_GIST).body
+    deploy_config_file = read_resource_file("deploy.rb")
     context["app_name"] ||= ui.ask("What's the name of the application?")
     app_name = context["app_name"]
-    deploy_gist.gsub!(/(:application,\s)(\"\")/, '\1' + "\"#{app_name}\"")
-    deploy_gist.gsub!(/(:admin_runner,\s)(\"\")/, '\1' + "\"#{app_name}\"")
+    deploy_config_file.gsub!(/(:application,\s)(\"\")/, '\1' + "\"#{app_name}\"")
+    deploy_config_file.gsub!(/(:admin_runner,\s)(\"\")/, '\1' + "\"#{app_name}\"")
+    deploy_config_file.gsub!(/(:stage_dir,\s)(\"\")/, '\1' + "\"#{RECIPES[context['recipe']]['config_path']}/deploy\"")
 
     newrelic_appname = ui.ask("What's the name of the application in new relic?")
     if !newrelic_appname.nil? && !newrelic_appname.empty?
-      deploy_gist.gsub!(/(:newrelic_appname,\s)(\"\")/, '\1' + "\"#{newrelic_appname}\"")
+      deploy_config_file.gsub!(/(:newrelic_appname,\s)(\"\")/, '\1' + "\"#{newrelic_appname}\"")
       context["newrelic_appname"] = newrelic_appname
     end
 
     newrelic_license_key = ui.ask("What's the license key of your newrelic account (can be found under 'Account settings')?")
     if !newrelic_license_key.nil? && !newrelic_license_key.empty?
-      deploy_gist.gsub!(/(:newrelic_license_key,\s)(\"\")/, '\1' + "\"#{newrelic_license_key}\"")
+      deploy_config_file.gsub!(/(:newrelic_license_key,\s)(\"\")/, '\1' + "\"#{newrelic_license_key}\"")
       context["newrelic_license_key"] = newrelic_license_key
     end
-    
+
+    extra_config_file = "#{RESOURCES_BASE_PATH}/#{context["recipe"]}/deploy.rb"
+    if File.exists? extra_config_file
+      deploy_config_file << "\n\n"
+      deploy_config_file << "# #{context['recipe'].capitalize} config"
+      deploy_config_file << "\n"
+
+      File.open(extra_config_file, "r") do |f|
+        f.each do |line|
+          deploy_config_file << line
+        end
+      end
+    end
+
     File.open(deploy, "w") do |f|
-      deploy_gist.each_line do |line|
+      deploy_config_file.each_line do |line|
         f.print line
       end
     end
   end
-  
-  deploy_dir = File.join(base, "app", "config", "deploy")
+
+  deploy_dir = File.join(base, RECIPES[context['recipe']]['config_path'], "deploy")
   Dir.mkdir(deploy_dir) unless File.directory?(deploy_dir)
-  
+
   {
-    "production" => PRODUCTION_GIST, 
-    "staging" => STAGING_GIST
-  }.each do |env, gist|
+    "production" => "deploy_production.rb",
+    "staging" => "deploy_staging.rb"
+  }.each do |env, source_file|
     file = File.join(deploy_dir, "#{env}.rb")
     write = true
 
@@ -100,25 +122,25 @@ def update_deploy_config(ui, base, context, force)
     end
 
     if write
-      gist_body = get_plain_secure(gist).body
+      content = read_resource_file(source_file)
       server = ui.ask("On which server is the #{env} environment deployed?")
-      if !server.match(/^.*\.kunstmaan\.be$/) && !server.match(/^.*\.kunstmaan\.com$/) 
+      if !server.match(/^.*\.kunstmaan\.be$/) && !server.match(/^.*\.kunstmaan\.com$/)
         server = "#{server}.cloud.kunstmaan.com"
       end
 
-      gist_body.gsub!(/(:domain,\s)(\"\")/, '\1' + "\"#{server}\"")
+      content.gsub!(/(:domain,\s)(\"\")/, '\1' + "\"#{server}\"")
 
       File.open(file, "w") do |f|
-        gist_body.each_line do |line|
+        content.each_line do |line|
           f.print line
         end
       end
     end
   end
-  
+
 end
 
-def update_jenkins_config(ui, base, context, force)
+def update_symfony2(ui, base, context, force)
   file = File.join(base, "build.xml")
   write = true
 
@@ -130,52 +152,82 @@ def update_jenkins_config(ui, base, context, force)
   end
 
   if write
-    gist_body = get_plain_secure(BUILD_GIST).body
-    
+    build_file = read_resource_file("#{context['recipe']}/build.xml")
+
     context["app_name"] ||= ui.ask("What's the name of the application?")
     app_name = context["app_name"]
-    gist_body.gsub!(/(\<project\sname=)(\"\")/, '\1' + "\"#{app_name}\"")
-  
+    build_file.gsub!(/(\<project\sname=)(\"\")/, '\1' + "\"#{app_name}\"")
+
     File.open(file, "w") do |f|
-      gist_body.each_line do |line|
+      build_file.each_line do |line|
         f.print line
       end
     end
   end
-  
+
   build_dir = File.join(base, "build")
   web_dir = File.join(base, "web")
   Dir.mkdir(build_dir) unless File.directory?(build_dir)
   Dir.mkdir(web_dir) unless File.directory?(web_dir)
-  
-  {
-    File.join(build_dir, "phpcs.xml") => PHPCS_GIST, 
-    File.join(build_dir, "phpmd.xml") => PHPMD_GIST,
-    File.join(build_dir, "phpdox.xml") => PHPDOX_GIST,
-    File.join(base, "app", "phpunit.xml.dist") => PHPUNIT_GIST,
-    File.join(web_dir, "app_test.php") => APPTEST_GIST,
-    File.join(base, "behat.yml-dist") => BEHAT_GIST
-  }.each do |file, gist|
+
+  copy_resources({
+    File.join(build_dir, "phpcs.xml") => "#{context['recipe']}/phpcs.xml",
+    File.join(build_dir, "phpmd.xml") => "#{context['recipe']}/phpmd.xml",
+    File.join(build_dir, "phpdox.xml") => "#{context['recipe']}/phpdox.xml",
+    File.join(base, "app", "phpunit.xml.dist") => "#{context['recipe']}/phpunit.xml.dist",
+    File.join(web_dir, "app_test.php") => "#{context['recipe']}/app_test.php",
+    File.join(base, "behat.yml-dist") => "#{context['recipe']}/behat.yml-dist"
+  }, ui, context)
+end
+
+def update_play(ui, base, context, force)
+  copy_resources({
+    File.join(base, "start.sh") => "#{context['recipe']}/start.sh",
+    File.join(base, "stop.sh") => "#{context['recipe']}/stop.sh"
+  }, ui, context)
+end
+
+def copy_resources(resource_map, ui, context)
+  resource_map.each do |destination_file, source_file|
     write = true
-    
-    if File.exists?(file)
-      overwrite = ui.ask("The file #{file} already exists, do you want to override it?  ") { |q| q.default = 'n' }
+
+    if File.exists?(destination_file)
+      overwrite = ui.ask("The file #{destination_file} already exists, do you want to override it?  ") { |q| q.default = 'n' }
       if !overwrite.match(/^y/)
         write = false
       end
     end
-    
+
     if write
-      gist_body = get_plain_secure(gist).body
-      
-      File.open(file, "w") do |f|
-        gist_body.each_line do |line|
-          f.print line
+      content = read_resource_file("#{source_file}")
+
+      File.open(destination_file, "w") do |f|
+        content.each_line do |line|
+          f.print line.sub("{{application_name}}", context['app_name'])
         end
       end
     end
   end
-  
+end
+
+def read_resource_file(filename)
+  read_file("#{RESOURCES_BASE_PATH}/#{filename}")
+end
+
+def read_file(file)
+  content = ""
+  File.open(file, "r") do |f|
+    f.each do |line|
+      content << line
+    end
+  end
+
+  content
+end
+
+def unindent(string)
+  indentation = string[/\A\s*/]
+  string.strip.gsub(/^#{indentation}/, "")
 end
 
 def get_plain_secure(url)
@@ -198,27 +250,6 @@ def validate_path
   end
 end
 
-def update_vendors(base)
-    vendors = File.join(base, "bin", "vendors")
-    if File.directory?(vendors)
-      fcontent = ""
-      File.open(vendors, "r") do |f|
-        f.each do |line|
-          fcontent << line
-        end
-      end
-
-      File.open(vendors, "w") do |f|
-        fcontent.each_line do |line|
-          f.print line
-          if line.include? "git clone %s %s"
-            f.print "            system(sprintf('cd %s && git config core.filemode false', escapeshellarg($installDir)));" + "\r\n"
-          end
-        end
-      end
-    end
-end
-
 force = false
 
 OptionParser.new do |opts|
@@ -228,7 +259,7 @@ OptionParser.new do |opts|
     puts opts
     exit 0
   end
-  
+
   opts.on("-c", "--config", "Creates the configuration files needed for deployment") do
     validate_path
     ui = HighLine.new
@@ -237,16 +268,7 @@ OptionParser.new do |opts|
     update_deploy_config ui, base, context, force
     exit 0
   end
-  
-  opts.on("-j", "--jenkins", "Creates the jenkins configuration files for this project") do
-    validate_path
-    ui = HighLine.new
-    base = ARGV.shift
-    context = Hash.new
-    update_jenkins_config ui, base, context, force
-    exit 0
-  end
-  
+
   opts.on("-f", "--force", "This will force the kumafying of the project") do
     force = true
   end
@@ -270,13 +292,13 @@ if force && File.exists?("Capfile")
   File.delete("Capfile")
 end
 
-puts "[start] capifony"
-%x(capifony .)
-puts "[end] capifony"
-
-update_capfile base, context, force
+update_capfile ui, base, context, force
 update_deploy_config ui, base, context, force
-update_jenkins_config ui, base, context, force
-update_vendors base
+
+begin
+  send("update_#{context['recipe']}", ui, base, context, force)
+rescue NoMethodError => e
+  # Do nothing
+end
 
 puts "[done] project kumafied!"

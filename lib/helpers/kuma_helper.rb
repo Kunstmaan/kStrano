@@ -1,15 +1,15 @@
-module Kumastrano
-    
-  def poll(msg=nil, seconds=10.0, interval_seconds=1.0) 
+module KStrano
+
+  def poll(msg=nil, seconds=10.0, interval_seconds=1.0)
     (seconds / interval_seconds).to_i.times do
       result = yield
       return if result
       sleep interval_seconds
     end
-    msg ||= "polling failed after #{seconds} seconds" 
+    msg ||= "polling failed after #{seconds} seconds"
     raise msg
   end
-  
+
   def say(text, prefix='--> ')
     Capistrano::CLI.ui.say("#{prefix}#{text}")
   end
@@ -23,5 +23,5 @@ module Kumastrano
   end
 
   module_function :poll, :say, :ask
-  
+
 end

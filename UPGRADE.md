@@ -1,6 +1,27 @@
 Upgrade Instructions
 ====================
 
+### Upgrade to 1.1.0
+
+To upgrade to the new version, make sure you reinstall kstrano
+
+```bash
+gem uninstall kstrano
+gem install kstrano
+gem cleanup railsless-deply, capifony, capistrano
+```
+
+After that in every project you must update the Capfile so that it uses the right recipe, for symfony it should look like this:
+
+```bash
+load 'deploy' if respond_to?(:namespace) # cap2 differentiator
+
+require 'kstrano_symfony2'
+load 'app/config/deploy'
+````
+
+the require statement of capifony_symfony2 should be removed and `load Gem.find_files('kstrano.rb').last.to_s` should be replaced by `require 'kstrano_symfony2'`
+
 ### Upgrade to version 0.0.21:
 
 To upgrade to the new version make sure all the previous installs are removed:
@@ -27,21 +48,21 @@ To kumafy an existing project use the --force option:
 ```bash
 cd to/your/project/path
 kumafy . --force
-``` 
+```
 
 The new config files are made for Symfony version > 2.1 and use composer, to make it work with an older version you need to change
 
 ```ruby
 set :use_composer, true
 set :update_vendors, false
-``` 
+```
 
-to 
+to
 
 ```ruby
 set :use_composer, false
 set :vendors_mode, "install"
 set :update_vendors, true
-``` 
+```
 
 in your deploy.rb

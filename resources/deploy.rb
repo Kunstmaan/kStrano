@@ -6,7 +6,7 @@ set :keep_releases, 5
 default_run_options[:pty] = true
 
 # Stages
-set :stage_dir, "app/config/deploy"
+set :stage_dir, ""
 set :stages, %w{production staging}
 set :default_stage, "production"
 require 'capistrano/ext/multistage'
@@ -24,21 +24,6 @@ set :scm, :git
 ssh_options[:forward_agent] = true # http://help.github.com/deploy-with-capistrano/
 set :deploy_via, :remote_cache #only keeps an online cache
 set :branch, "master"
-
-# Symfony 2
-set :model_manager, "doctrine"
-set :shared_children, [log_path, web_path + "/uploads"]
-
-# When using Symfony 2.0
-# set :use_composer, false
-# set :vendors_mode, "install"
-# set :update_vendors, true
-
-# When using Symfony 2.1
-set :use_composer, true
-set :update_vendors, false
-
-set :writable_dirs,     ["app/cache", "app/logs"]
 
 set :newrelic_appname, "" # The name of the application in newrelic
 set :newrelic_license_key, "" # The license key can be found under 'Account settings'
