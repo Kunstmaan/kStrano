@@ -19,7 +19,7 @@ module KStrano
 
         set :dump_assetic_assets, true
         set :interactive_mode, false
-        set :clear_controllers, false # set this by default to false, because it's quiet dangerous for existing projects. You need to make sure it doesn't delete your app.php
+        set :clear_controllers, true
 
         set (:symfony_env_prod) {"#{env}"}
 
