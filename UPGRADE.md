@@ -1,6 +1,10 @@
 Upgrade Instructions
 ====================
 
+### Upgrade to 1.1.1
+
+kStrano doesn't check for the environment to notify newrelic of the deployment, now the configuration for newrelic must move to the specific stage configuration. This way you can configure to notify newrelic for staging and production and use different configurations for both.
+
 ### Upgrade to 1.1.0
 
 To upgrade to the new version, make sure you reinstall kstrano

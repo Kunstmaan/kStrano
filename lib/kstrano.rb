@@ -14,6 +14,9 @@ set :shared_children, false
 set :copy_node_modules, true
 set :copy_bower_vendors, true
 
+set :newrelic_appname, ''
+set :newrelic_license_key, ''
+
 namespace :files do
   namespace :move do
 
@@ -262,7 +265,7 @@ end
 after :deploy do
   kuma.fix.cron
 
-  if env.start_with?('prod') && !newrelic_appname.nil? && !newrelic_appname.empty? && !newrelic_license_key.nil? && !newrelic_appname.empty?
+  if !newrelic_appname.nil? && !newrelic_appname.empty? && !newrelic_license_key.nil? && !newrelic_appname.empty?
     ::NewRelic::Agent.config.apply_config({:license_key => newrelic_license_key}, 1)
     set :newrelic_rails_env, env
     newrelic.notice_deployment

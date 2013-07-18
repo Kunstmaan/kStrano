@@ -25,9 +25,6 @@ ssh_options[:forward_agent] = true # http://help.github.com/deploy-with-capistra
 set :deploy_via, :remote_cache #only keeps an online cache
 set :branch, "master"
 
-set :newrelic_appname, "" # The name of the application in newrelic
-set :newrelic_license_key, "" # The license key can be found under 'Account settings'
-
 # Logging
 # - IMPORTANT = 0
 # - INFO      = 1
