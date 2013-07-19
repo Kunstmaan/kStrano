@@ -150,7 +150,14 @@ namespace :kuma do
     task :perms do
       sudo "sh -c 'if [ -f /opt/kDeploy/tools/fixperms.py ] ; then cd /opt/kDeploy/tools/; python fixperms.py #{application}; fi'"
     end
+
+    desc "DON'T RUN THIS MANUALLY, is part of the deploy flow"
+    task :release_permissions do
+      sudo "chown -R #{application}:#{application} #{latest_release}"
+      sudo "setfacl -R -m group:admin:rwx #{latest_release}"
+    end
   end
+
 end
 
 namespace :deploy do
@@ -240,8 +247,7 @@ end
 ## Fix the permissions of the latest release, so that it's readable for the project user
 before "deploy:finalize_update" do
   on_rollback { sudo "rm -rf #{release_path}; true" } # by default capistrano will use the run command, but everything has project user rights in our server setup, so use try_sudo in stead of run.
-  sudo "chown -R #{application}:#{application} #{latest_release}"
-  sudo "setfacl -R -m group:admin:rwx #{latest_release}"
+  kuma.fix.release_permissions
 end
 
 before "deploy:update" do
