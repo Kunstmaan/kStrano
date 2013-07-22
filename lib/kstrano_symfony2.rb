@@ -25,9 +25,9 @@ module KStrano
 
         set :uploaded_files_path, 'web/uploads'
 
-        set :npm_install, true
-        set :bower_install, true
-        set :grunt_build, true
+        set :npm_install, false
+        set :bower_install, false
+        set :grunt_build, false
 
         namespace :database do
           namespace :move do
