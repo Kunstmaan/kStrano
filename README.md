@@ -90,6 +90,37 @@ in your deploy.rb
 
 From now on you should be able to run ```cap:deploy``` to deploy the project...
 
+## Configuration
+
+kStrano specific configuration options
+
+```ruby
+set :force_schema, false     # when true, schema:update will be run (see gem deploy:schema:update)
+set :force_migrations, false # when true, migrations will be run (see gem deploy:migrations)
+
+set :npm_install, true       # when true, npm install will be run after composer install 
+set :bower_install, true     # when true, bower install will be run after npm install
+set :grunt_build, true       # when true, grunt build will be run after bower install
+```
+
+These options are on by default, you can overwrite these in your deploy.rb or by running your cap deploy with -s (ex. cap deploy -s force_schema=true)
+
+The following defaults of [Capifony][capifony] are set in kStrano:
+
+```ruby
+set :copy_vendors, true                 # when true, vendors will be copied from a previous release
+
+set :dump_assetic_assets, true          # when true, use the assetic bundle
+set :interactive_mode, false            # when false, it will never ask for confirmations (migrations task for instance)
+set :clear_controllers, true            # when true, removes the app_*.php files from web/
+
+set (:symfony_env_prod) {"#{env}"}      # the symfony environment variable is set to what's configured in env
+
+set :uploaded_files_path, 'web/uploads' # the path where your files are uploaded
+```
+
+For further configuration options see [Capifony][capifony]. 
+
 ## Custom commands for PHP next to the one capifony makes available:
 
 * cap deploy:migrations, this will deploy and execute the pending migrations
