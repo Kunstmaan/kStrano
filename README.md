@@ -185,7 +185,7 @@ So you can not use relative paths in your custom template if you want to show im
 
 # Changelog
 
-* 10/07/2013 (version 1.1.3)
+* 22/07/2013 (version 1.1.3)
  * bower support disabled by default, added to your deploy.rb on 'kumafy .'
 
 * 10/07/2013 (version 1.1.0)
