@@ -50,27 +50,9 @@ module KStrano
               task :restart do
                 sudo "/etc/init.d/php5-fpm restart"
               end
-            end
 
-            namespace :apc do
-              desc "Prepare for APC cache clear"
-              task :prepare_clear do
-                server_project_name = "#{server_name}"
-                if server_project_name.nil? || server_project_name.empty?
-                  server_project_name = domain.split('.')[0]
-                end
-                sudo "sh -c 'if [ ! -f /home/projects/#{server_project_name}/site/apcclear.php ]; then curl https://raw.github.com/Kunstmaan/kStrano/master/config/apcclear.php > /home/projects/#{server_project_name}/site/apcclear.php; fi'"
-                sudo "chmod 777 /home/projects/#{server_project_name}/site/apcclear.php"
-              end
-
-              desc "Clear the APC cache"
-              task :clear do
-                hostname = "#{domain}"
-                server_project_name = "#{server_name}"
-                if !server_project_name.nil? && !server_project_name.empty?
-                  hostname = "#{server_project_name}.#{hostname}"
-                end
-                sudo "curl http://#{hostname}/apcclear.php"
+              desc "Gracefully restart PHP5 fpm"
+              task :graceful_restart
                 sudo "pkill -QUIT -f \"^php-fpm: pool #{application} \" "
               end
             end
@@ -148,9 +130,8 @@ module KStrano
           end
         end
 
-        before "deploy:finalize_update", "kuma:apc:prepare_clear"
-        after "deploy:finalize_update", "kuma:apc:clear"
-        after "deploy:create_symlink", "kuma:apc:clear"
+        after "deploy:finalize_update", "kuma:fpm:graceful_restart"
+        after "deploy:create_symlink", "kuma:fpm:graceful_restart"
 
       end
     end

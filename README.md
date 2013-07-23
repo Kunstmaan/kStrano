@@ -54,7 +54,7 @@ kumafy . --force
 * cap kuma:fix:perms, this will run the fixperms command on the server from [kDeploy][kdeploy].
 * cap kuma:fpm:reload, this will reload fpm on the server.
 * cap kuma:fpm:restart, this will restart fpm on the server.
-* cap kuma:apc:clear, this will clear the apc cache.
+* cap kuma:fpm:graceful_restart, this will gracefully restart fpm on the server.
 * cap kuma:changelog, this will show the log of what changed compared to the deployed version
 * cap kuma:sync, this will sync the database and rsync the uploaded files from online to local
 
@@ -98,7 +98,7 @@ kStrano specific configuration options
 set :force_schema, false     # when true, schema:update will be run (see gem deploy:schema:update)
 set :force_migrations, false # when true, migrations will be run (see gem deploy:migrations)
 
-set :npm_install, true       # when true, npm install will be run after composer install 
+set :npm_install, true       # when true, npm install will be run after composer install
 set :bower_install, true     # when true, bower install will be run after npm install
 set :grunt_build, true       # when true, grunt build will be run after bower install
 ```
@@ -119,7 +119,7 @@ set (:symfony_env_prod) {"#{env}"}      # the symfony environment variable is se
 set :uploaded_files_path, 'web/uploads' # the path where your files are uploaded
 ```
 
-For further configuration options see [Capifony][capifony]. 
+For further configuration options see [Capifony][capifony].
 
 ## Custom commands for PHP next to the one capifony makes available:
 
@@ -184,6 +184,10 @@ Now you will see your own custom maintenance page. Note that the deploy:web:disa
 So you can not use relative paths in your custom template if you want to show images, custom css etc.
 
 # Changelog
+
+* 23/07/2013 (version 1.1.4)
+ * command added kuma:fpm:graceful_restart
+ * commands removed kuma:apc:prepare, kuma:apc:clear
 
 * 10/07/2013 (version 1.1.0)
  * updated to work with [Capifony][capifony] 2.2.10
