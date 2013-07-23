@@ -52,7 +52,7 @@ module KStrano
               end
 
               desc "Gracefully restart PHP5 fpm"
-              task :graceful_restart
+              task :graceful_restart do
                 sudo "pkill -QUIT -f \"^php-fpm: pool #{application} \" "
               end
             end
