@@ -54,7 +54,8 @@ kumafy . --force
 * cap kuma:fix:perms, this will run the fixperms command on the server from [kDeploy][kdeploy].
 * cap kuma:fpm:reload, this will reload fpm on the server.
 * cap kuma:fpm:restart, this will restart fpm on the server.
-* cap kuma:fpm:graceful_restart, this will gracefully restart fpm on the server.
+* cap kuma:fpm:graceful_restart, this will restart fpm on the server gracefully.
+* cap kuma:apc:clear, this will clear the apc cache.
 * cap kuma:changelog, this will show the log of what changed compared to the deployed version
 * cap kuma:sync, this will sync the database and rsync the uploaded files from online to local
 
@@ -184,6 +185,9 @@ Now you will see your own custom maintenance page. Note that the deploy:web:disa
 So you can not use relative paths in your custom template if you want to show images, custom css etc.
 
 # Changelog
+
+* 01/08/2013 (version 1.1.5)
+ * revert changes from 23/07/2013
 
 * 23/07/2013 (version 1.1.4)
  * command added kuma:fpm:graceful_restart
