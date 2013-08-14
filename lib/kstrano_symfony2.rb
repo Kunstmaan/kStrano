@@ -114,19 +114,6 @@ module KStrano
           end
         end
 
-        # make it possible to run schema:update and migrations:migrate at the right place in the flow
-        after "symfony:bootstrap:build" do
-          if model_manager == "doctrine"
-            if force_schema
-              symfony.doctrine.schema.update
-            end
-
-            if force_migrations
-              symfony.doctrine.migrations.migrate
-            end
-          end
-        end
-
         # set the right permissions on the vendor folder ...
         after "symfony:composer:copy_vendors" do
           sudo "sh -c 'if [ -d #{latest_release}/vendor ] ; then chown -R #{application}:#{application} #{latest_release}/vendor; fi'"
@@ -148,6 +135,16 @@ module KStrano
 
             if grunt_build
               frontend.grunt.build
+            end
+
+            if model_manager == "doctrine"
+              if force_schema
+                symfony.doctrine.schema.update
+              end
+
+              if force_migrations
+                symfony.doctrine.migrations.migrate
+              end
             end
           end
         end
