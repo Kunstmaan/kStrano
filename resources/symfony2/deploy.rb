@@ -15,3 +15,5 @@ set :grunt_build, true
 # When using Symfony 2.1
 set :use_composer, true
 set :update_vendors, false
+
+set :update_assets_version, true
