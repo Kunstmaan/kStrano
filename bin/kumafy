@@ -23,6 +23,9 @@ RECIPES = {
   },
   "magento" => {
     "config_path" => "app/config"
+  },
+  "silex" => {
+    "config_path" => "."
   }
 } # all the supported recipes
 
