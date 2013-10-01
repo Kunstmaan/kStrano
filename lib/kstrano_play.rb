@@ -8,8 +8,8 @@ module KStrano
         load_paths.push File.expand_path('../', __FILE__)
         load 'kstrano'
 
-         unless exists?(:play_version)
-            set :play_version, "2.2.0"
+        unless exists?(:play_version)
+          set :play_version, "2.2.0"
         end
 
         namespace :deploy do
