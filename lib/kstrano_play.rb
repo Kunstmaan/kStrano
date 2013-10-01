@@ -8,9 +8,7 @@ module KStrano
         load_paths.push File.expand_path('../', __FILE__)
         load 'kstrano'
 
-        unless exists?(:play_version)
-          set :play_version, "2.2.0"
-        end
+        set :play_version, "2.2.0"
 
         namespace :deploy do
         	desc "Updates latest release source path"
