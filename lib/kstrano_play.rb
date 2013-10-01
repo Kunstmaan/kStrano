@@ -8,6 +8,10 @@ module KStrano
         load_paths.push File.expand_path('../', __FILE__)
         load 'kstrano'
 
+         unless exists?(:play_version)
+            set :play_version, "2.2.0"
+        end
+
         namespace :deploy do
         	desc "Updates latest release source path"
 				  task :finalize_update, :roles => :app, :except => { :no_release => true } do
@@ -24,14 +28,14 @@ module KStrano
         namespace :play do
         	desc "Build the app"
 		      task :package do
-                        unless File.directory?("/home/projects/#{application}/play/play-#{play_version}")
-                          try_sudo "bash -ic 'cd /home/projects/#{application}/play  &&
-                                        wget http://downloads.typesafe.com/play/#{play_version}/play-#{play_version}.zip &&
-                                        unzip play-#{play_version}.zip &&
-                                        rm play-#{play_version}.zip &&
-                                        chmod -R 775 play-#{play_version}'"
-                        end
-                        try_sudo "bash -c 'cd #{latest_release} && /home/projects/#{application}/play/play-#{play_version}/play clean compile stage'"
+		        unless File.directory?("/home/projects/#{application}/play/play-#{play_version}")
+		          try_sudo "bash -ic 'cd /home/projects/#{application}/play  &&
+		           wget http://downloads.typesafe.com/play/#{play_version}/play-#{play_version}.zip &&
+		           unzip play-#{play_version}.zip &&
+		           rm play-#{play_version}.zip &&
+		           chmod -R 775 play-#{play_version}'"
+		        end
+		        try_sudo "bash -c 'cd #{latest_release} && /home/projects/#{application}/play/play-#{play_version}/play clean compile stage'"
 		      end
 
 		      desc "Start the server"
