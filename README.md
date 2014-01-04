@@ -216,6 +216,10 @@ So you can not use relative paths in your custom template if you want to show im
  * updated the default config files like: deploy.rb, staging.rb, production.rb, build.xml, etc.
  * fix to make the forward_agent working
  * small fixes
+ 
+ 
+[![Analytics](https://ga-beacon.appspot.com/UA-3160735-7/Kunstmaan/kStrano)](https://github.com/igrigorik/ga-beacon)
+
 
 [kstrano]: https://github.com/Kunstmaan/kStrano "kStrano"
 [capistrano]: https://github.com/capistrano/capistrano "Capistrano"
