@@ -125,8 +125,8 @@ module KStrano
 
         ["symfony:composer:install", "symfony:composer:update", "symfony:vendors:install", "symfony:vendors:upgrade"].each do |action|
           after action do |variable|
-
-            sudo "sh -c 'php #{release_path}/vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Resources/bin/build_bootstrap.php'"
+            
+            sudo "sh -c 'if [ -f #{release_path}/vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Resources/bin/build_bootstrap.php ]; then php #{release_path}/vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Resources/bin/build_bootstrap.php; fi'"
 
             if bower_install
               frontend.bower.install
