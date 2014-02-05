@@ -8,8 +8,9 @@ set :webserver_user,    "www-data"
 set :permission_method, :acl
 set :server_name, nil
 set :port, 22
-set :shared_files, false
-set :shared_children, false
+set :shared_files, []
+set :shared_children, []
+set :npm_flags, '--production --silent'
 
 set :copy_node_modules, true
 set :copy_bower_vendors, true
@@ -23,7 +24,7 @@ namespace :files do
     desc "Rsync uploaded files from online to local"
     task :to_local do
       KStrano.say "Copying files"
-      log = `rsync -qazhL --progress --del --rsh=/usr/bin/ssh -e "ssh -p #{port}" --exclude "*bak" --exclude "*~" --exclude ".*" #{domain}:#{current_path}/#{uploaded_files_path}/* #{uploaded_files_path}/`
+      log = `rsync -qazhL ngress --del --rsh=/usr/bin/ssh -e "ssh -p #{port}" --exclude "*bak" --exclude "*~" --exclude ".*" #{domain}:#{current_path}/#{uploaded_files_path}/* #{uploaded_files_path}/`
       KStrano.say log
     end
 
@@ -177,7 +178,7 @@ namespace :frontend do
   namespace :npm do
     desc "Install the node modules"
     task :install do
-      run "#{try_sudo} -i sh -c 'cd #{latest_release} && npm install'"
+      run "#{try_sudo} -i sh -c 'cd #{latest_release} && npm install #{npm_flags}'"
     end
 
     task :copy, :except => { :no_release => true } do

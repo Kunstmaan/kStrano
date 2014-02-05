@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'kstrano'
-  s.version     = '1.1.9'
+  s.version     = '1.1.10'
   s.license = 'MIT'
   s.summary     = <<-DESC.strip.gsub(/\n\s+/, " ")
     Deploying symfony2 applications for the kDeploy server setup.
@@ -26,5 +26,6 @@ Gem::Specification.new do |s|
   s.add_dependency(%q<broach>, [">= 0.2.1"])
   s.add_dependency(%q<newrelic_rpm>, [">= 3.5.5.38"])
   s.add_dependency(%q<railsless-deploy>, ["~> 1.1.2"])
+  s.add_dependency(%q<net-ssh>, ["~> 2.7.0"])
 
 end
