@@ -11,20 +11,16 @@ module KStrano
         load 'kstrano'
 
         set :php_bin, "php"
-
         set :copy_vendors, true
-
+        set :cache_warmup, false
         set :force_schema, false
         set :force_migrations, false
-
+        set :update_assets_version, true
         set :dump_assetic_assets, true
         set :interactive_mode, false
         set :clear_controllers, true
-
         set (:symfony_env_prod) {"#{env}"}
-
         set :uploaded_files_path, 'web/uploads'
-
         set :npm_install, false
         set :bower_install, false
         set :grunt_build, false
@@ -125,7 +121,7 @@ module KStrano
 
         ["symfony:composer:install", "symfony:composer:update", "symfony:vendors:install", "symfony:vendors:upgrade"].each do |action|
           after action do |variable|
-            
+
             sudo "sh -c 'if [ -f #{release_path}/vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Resources/bin/build_bootstrap.php ]; then php #{release_path}/vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Resources/bin/build_bootstrap.php; fi'"
 
             if bower_install
@@ -155,7 +151,18 @@ module KStrano
         before "deploy:finalize_update", "kuma:apc:prepare_clear"
         after "deploy:finalize_update", "kuma:apc:clear", "kuma:fpm:graceful_restart"
         after "deploy:create_symlink", "kuma:apc:clear", "kuma:fpm:graceful_restart"
-        before "symfony:cache:warmup", "symfony:cache:clear"
+
+        after "kuma:fpm:graceful_restart", "cache:clear:hard"
+
+        namespace :cache do
+          namespace :clear do
+            desc "Cache clear using rm -Rf"
+            task :hard, :roles => :app, :except => { :no_release => true } do
+              run "#{try_sudo} sh -c 'cd #{latest_release} && rm -Rf #{latest_release}/#{cache_path}/*'"
+              capifony_puts_ok
+            end
+          end
+        end
 
       end
     end
