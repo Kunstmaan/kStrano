@@ -189,7 +189,7 @@ namespace :frontend do
   namespace :bower do
     desc "Install the javascript vendors"
     task :install do
-      run "#{try_sudo} -i sh -c 'cd #{latest_release} && bower install'"
+      run "#{try_sudo} -i sh -c 'cd #{latest_release} && bower install --config.interactive=false'"
     end
 
     task :copy, :except => { :no_release => true } do
