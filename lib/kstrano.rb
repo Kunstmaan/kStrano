@@ -180,6 +180,13 @@ namespace :deploy do
 end
 
 namespace :frontend do
+  namespace :bundle do
+    desc "Run bundle install and ensure all gem requirements are met"
+    task :install do
+      run "#{try_sudo} sh -c 'cd #{latest_release} && bundle install --deployment'"
+    end
+  end
+
   namespace :npm do
     desc "Install the node modules"
     task :install do
