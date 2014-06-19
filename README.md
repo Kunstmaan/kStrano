@@ -99,7 +99,7 @@ kStrano specific configuration options
 set :force_schema, false     # when true, schema:update will be run (see gem deploy:schema:update)
 set :force_migrations, false # when true, migrations will be run (see gem deploy:migrations)
 
-set :bundle, true            # when true, bundler will run an install
+set :bundler_install, true   # when true, bundler will run an install
 set :npm_install, true       # when true, npm install will be run after composer install
 set :bower_install, true     # when true, bower install will be run after npm install
 set :grunt_build, true       # when true, grunt build will be run after bower install
