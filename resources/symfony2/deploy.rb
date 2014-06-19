@@ -3,6 +3,7 @@ set :shared_children, [log_path, web_path + "/uploads"]
 
 set :writable_dirs,     ["app/cache", "app/logs"]
 
+set :bundler_install, true
 set :npm_install, true
 set :bower_install, true
 set :grunt_build, true

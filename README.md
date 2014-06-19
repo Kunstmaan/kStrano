@@ -99,6 +99,7 @@ kStrano specific configuration options
 set :force_schema, false     # when true, schema:update will be run (see gem deploy:schema:update)
 set :force_migrations, false # when true, migrations will be run (see gem deploy:migrations)
 
+set :bundler_install, true   # when true, bundler will run an install
 set :npm_install, true       # when true, npm install will be run after composer install
 set :bower_install, true     # when true, bower install will be run after npm install
 set :grunt_build, true       # when true, grunt build will be run after bower install
@@ -186,6 +187,9 @@ So you can not use relative paths in your custom template if you want to show im
 
 # Changelog
 
+* 19/06/2014 (version 1.2.0)
+ * Add bundler support
+
 * 01/08/2013 (version 1.1.5)
  * revert changes from 23/07/2013
 
@@ -216,8 +220,8 @@ So you can not use relative paths in your custom template if you want to show im
  * updated the default config files like: deploy.rb, staging.rb, production.rb, build.xml, etc.
  * fix to make the forward_agent working
  * small fixes
- 
- 
+
+
 [![Analytics](https://ga-beacon.appspot.com/UA-3160735-7/Kunstmaan/kStrano)](https://github.com/igrigorik/ga-beacon)
 
 

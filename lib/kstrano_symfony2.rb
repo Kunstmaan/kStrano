@@ -21,6 +21,7 @@ module KStrano
         set :clear_controllers, true
         set (:symfony_env_prod) {"#{env}"}
         set :uploaded_files_path, 'web/uploads'
+        set :bundler_install, false
         set :npm_install, false
         set :bower_install, false
         set :grunt_build, false
@@ -123,6 +124,10 @@ module KStrano
           after action do |variable|
 
             sudo "sh -c 'if [ -f #{release_path}/vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Resources/bin/build_bootstrap.php ]; then php #{release_path}/vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Resources/bin/build_bootstrap.php; fi'"
+
+            if bundler_install
+              frontend.bundler.install
+            end
 
             if bower_install
               frontend.bower.install

@@ -12,6 +12,7 @@ set :shared_files, []
 set :shared_children, []
 set :npm_flags, '--production --silent'
 
+set :copy_bundler_gems, true
 set :copy_node_modules, true
 set :copy_bower_vendors, true
 
@@ -180,6 +181,17 @@ namespace :deploy do
 end
 
 namespace :frontend do
+  namespace :bundler do
+    desc "Run bundle install and ensure all gem requirements are met"
+    task :install do
+      run "#{try_sudo} sh -c 'cd #{latest_release} && bundle install --deployment'"
+    end
+
+    task :copy, :except => { :no_release => true } do
+      run "#{try_sudo} sh -c 'bundleDir=#{current_path}/vendor/bundle; if [ -d $bundleDir ] || [ -h $bundleDir ]; then cp -a $bundleDir #{latest_release}/vendor/bundle; fi;'"
+    end
+  end
+
   namespace :npm do
     desc "Install the node modules"
     task :install do
@@ -207,6 +219,12 @@ namespace :frontend do
     task :build do
       run "#{try_sudo} -i sh -c 'cd #{latest_release} && grunt build'"
     end
+  end
+end
+
+before "frontend:bundler:install" do
+  if copy_bundler_gems
+    frontend.bundler.copy
   end
 end
 

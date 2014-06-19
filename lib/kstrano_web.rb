@@ -8,21 +8,26 @@ module KStrano
         load_paths.push File.expand_path('../', __FILE__)
         load 'kstrano'
 
+        set :bundler_install, false
         set :npm_install, true
         set :bower_install, true
         set :grunt_build, true
         set :group_writable, false
 
         before "kuma::share_childs" do
-        	kuma.share_childs
+          kuma.share_childs
         end
 
         after "deploy:finalize_update" do
-        	if bower_install
-						frontend.bower.install
-					end
+          if bundler_install
+            frontend.bundler.install
+          end
 
-					if npm_install
+          if bower_install
+            frontend.bower.install
+          end
+
+          if npm_install
             frontend.npm.install
           end
 
