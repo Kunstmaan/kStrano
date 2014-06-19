@@ -19,8 +19,8 @@ module KStrano
         end
 
         after "deploy:finalize_update" do
-          if bundle
-            frontend.bundle.install
+          if bundler_install
+            frontend.bundler.install
           end
 
           if bower_install
