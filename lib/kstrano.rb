@@ -12,7 +12,7 @@ set :shared_files, []
 set :shared_children, []
 set :npm_flags, '--production --silent'
 
-set :copy_bundle, true
+set :copy_bundler_gems, true
 set :copy_node_modules, true
 set :copy_bower_vendors, true
 
@@ -181,7 +181,7 @@ namespace :deploy do
 end
 
 namespace :frontend do
-  namespace :bundle do
+  namespace :bundler do
     desc "Run bundle install and ensure all gem requirements are met"
     task :install do
       run "#{try_sudo} sh -c 'cd #{latest_release} && bundle install --deployment'"
@@ -222,9 +222,9 @@ namespace :frontend do
   end
 end
 
-before "frontend:bundle:install" do
-  if copy_bundle
-    frontend.bundle.copy
+before "frontend:bundler:install" do
+  if copy_bundler_gems
+    frontend.bundler.copy
   end
 end
 

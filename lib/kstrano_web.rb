@@ -8,7 +8,7 @@ module KStrano
         load_paths.push File.expand_path('../', __FILE__)
         load 'kstrano'
 
-        set :bundle, false
+        set :bundler_install, false
         set :npm_install, true
         set :bower_install, true
         set :grunt_build, true
