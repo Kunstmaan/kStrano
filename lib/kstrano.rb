@@ -12,6 +12,7 @@ set :shared_files, []
 set :shared_children, []
 set :npm_flags, '--production --silent'
 
+set :copy_bundle, true
 set :copy_node_modules, true
 set :copy_bower_vendors, true
 
@@ -185,6 +186,10 @@ namespace :frontend do
     task :install do
       run "#{try_sudo} sh -c 'cd #{latest_release} && bundle install --deployment'"
     end
+
+    task :copy, :except => { :no_release => true } do
+      run "#{try_sudo} sh -c 'bundleDir=#{current_path}/vendor/bundle; if [ -d $bundleDir ] || [ -h $bundleDir ]; then cp -a $bundleDir #{latest_release}/vendor/bundle; fi;'"
+    end
   end
 
   namespace :npm do
@@ -214,6 +219,12 @@ namespace :frontend do
     task :build do
       run "#{try_sudo} -i sh -c 'cd #{latest_release} && grunt build'"
     end
+  end
+end
+
+before "frontend:bundle:install" do
+  if copy_bundle
+    frontend.bundle.copy
   end
 end
 
