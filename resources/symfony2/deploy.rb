@@ -6,7 +6,8 @@ set :writable_dirs,     ["app/cache", "app/logs"]
 set :bundler_install, true
 set :npm_install, true
 set :bower_install, true
-set :grunt_build, true
+set :grunt_build, false
+set :gulp_build, true
 
 # When using Symfony 2.0
 # set :use_composer, false

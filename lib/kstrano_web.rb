@@ -34,6 +34,10 @@ module KStrano
           if grunt_build
             frontend.grunt.build
           end
+
+          if gulp_build
+            frontend.gulp.build
+          end
         end
 
       end
