@@ -102,8 +102,8 @@ set :force_migrations, false # when true, migrations will be run (see gem deploy
 set :bundler_install, true   # when true, bundler will run an install
 set :npm_install, true       # when true, npm install will be run after composer install
 set :bower_install, true     # when true, bower install will be run after npm install
-set :grunt_build, true       # when true, grunt build will be run after bower install
-set :gulp_build, true       # when true, gulp build will be run after bower install
+set :grunt_build, false      # when true, grunt build will be run after bower install
+set :gulp_build, true        # when true, gulp build will be run after bower install
 ```
 
 These options are on by default, you can overwrite these in your deploy.rb or by running your cap deploy with -s (ex. cap deploy -s force_schema=true)
