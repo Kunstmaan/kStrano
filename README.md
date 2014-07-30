@@ -188,6 +188,9 @@ So you can not use relative paths in your custom template if you want to show im
 
 # Changelog
 
+* 19/06/2014 (version 1.3.0)
+ * Add gulp support
+
 * 19/06/2014 (version 1.2.0)
  * Add bundler support
 
