@@ -195,8 +195,7 @@ namespace :frontend do
   namespace :npm do
     desc "Install the node modules"
     task :install do
-      #run "#{try_sudo} -i sh -c 'cd #{latest_release} && npm install #{npm_flags}'"
-      run "#{try_sudo} -i sh -c 'cd #{latest_release} && npm install'"
+      run "#{try_sudo} -i sh -c 'cd #{latest_release} && npm install #{npm_flags}'"
     end
 
     task :copy, :except => { :no_release => true } do
