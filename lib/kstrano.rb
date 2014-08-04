@@ -220,6 +220,13 @@ namespace :frontend do
       run "#{try_sudo} -i sh -c 'cd #{latest_release} && grunt build'"
     end
   end
+
+  namespace :gulp do
+    desc "Executes the gulp build task"
+    task :build do
+      run "#{try_sudo} -i sh -c 'cd #{latest_release} && gulp build'"
+    end
+  end
 end
 
 before "frontend:bundler:install" do

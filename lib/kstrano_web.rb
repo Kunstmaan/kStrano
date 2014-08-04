@@ -12,6 +12,7 @@ module KStrano
         set :npm_install, true
         set :bower_install, true
         set :grunt_build, true
+        set :gulp_build, false
         set :group_writable, false
 
         before "kuma::share_childs" do
@@ -33,6 +34,10 @@ module KStrano
 
           if grunt_build
             frontend.grunt.build
+          end
+
+          if gulp_build
+            frontend.gulp.build
           end
         end
 

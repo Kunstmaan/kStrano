@@ -25,6 +25,7 @@ module KStrano
         set :npm_install, false
         set :bower_install, false
         set :grunt_build, false
+        set :gulp_build, false
 
         namespace :database do
           namespace :move do
@@ -139,6 +140,10 @@ module KStrano
 
             if grunt_build
               frontend.grunt.build
+            end
+
+            if gulp_build
+              frontend.gulp.build
             end
 
             if model_manager == "doctrine"

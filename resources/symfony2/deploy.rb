@@ -7,6 +7,7 @@ set :bundler_install, true
 set :npm_install, true
 set :bower_install, true
 set :grunt_build, true
+set :gulp_build, false
 
 # When using Symfony 2.0
 # set :use_composer, false
