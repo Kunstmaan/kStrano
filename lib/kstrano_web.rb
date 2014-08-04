@@ -11,8 +11,8 @@ module KStrano
         set :bundler_install, false
         set :npm_install, true
         set :bower_install, true
-        set :grunt_build, false
-        set :gulp_build, true
+        set :grunt_build, true
+        set :gulp_build, false
         set :group_writable, false
 
         before "kuma::share_childs" do
