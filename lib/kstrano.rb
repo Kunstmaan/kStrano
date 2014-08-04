@@ -173,6 +173,11 @@ namespace :deploy do
     end
     try_sudo "ln -sfT #{latest_release} #{current_path}"
   end
+
+  task :cleanup, :except => { :no_release => true } do
+    count = fetch(:keep_releases, 2).to_i
+    run "ls -1dt --color=never #{releases_path}/* | tail -n +#{count + 1} | #{try_sudo} xargs rm -rf"
+  end
 end
 
 namespace :frontend do
