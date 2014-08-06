@@ -176,7 +176,7 @@ namespace :deploy do
 
   task :cleanup, :except => { :no_release => true } do
     count = fetch(:keep_releases, 2).to_i
-    try_sudo "ls -1dt --color=never #{releases_path}/* | tail -n +#{count + 1} | #{try_sudo} xargs rm -rf"
+    run "ls -1dt --color=never #{releases_path}/* | tail -n +#{count + 1} | #{try_sudo} xargs rm -rf"
   end
 end
 
